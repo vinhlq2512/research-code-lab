@@ -1,0 +1,12 @@
+{
+  "dataset": "FewRel",
+  "input_jsonl": "data/processed/fewrel.jsonl",
+  "output_dir": "data/tasks/fewrel/seed_2021/10task_10shot",
+  "seed": 2021,
+  "num_tasks": 10,
+  "train_shots": 10,
+  "val_shots": 10,
+  "include_no_relation": false,
+  "allow_undersampled": false,
+  "max_test_per_relation": null
+}

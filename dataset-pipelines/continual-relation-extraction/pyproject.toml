@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cl-re-pipeline"
+version = "0.1.0"
+description = "Reproducible FewRel/TACRED task generation for continual relation extraction research"
+requires-python = ">=3.10"
+dependencies = ["certifi>=2024.2.2"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+cre-fetch-fewrel = "cl_re_pipeline.fetch_fewrel:main"
+cre-prepare-tacred = "cl_re_pipeline.prepare_tacred:main"
+cre-build-tasks = "cl_re_pipeline.build_tasks:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
