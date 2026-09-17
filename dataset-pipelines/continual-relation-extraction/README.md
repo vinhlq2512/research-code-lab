@@ -17,7 +17,7 @@ Subproject này chuẩn bị FewRel/TACRED task streams có thể tái lập cho
 ## Quickstart Từ Lab Root
 
 ```bash
-cd /Users/vinhlq2512/code/research-code-lab
+cd <research-code-lab-root>
 python3 -m venv .venv
 .venv/bin/python -m pip install -e dataset-pipelines/continual-relation-extraction
 cd dataset-pipelines/continual-relation-extraction

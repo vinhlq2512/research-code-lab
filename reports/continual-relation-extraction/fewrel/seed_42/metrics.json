@@ -1,0 +1,25 @@
+{
+  "average_accuracy_by_stage": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "average_forgetting": 0.0,
+  "evaluated_stage": 7,
+  "final_average_accuracy": 1.0,
+  "per_task_forgetting": {
+    "task_0": 0.0,
+    "task_1": 0.0,
+    "task_2": 0.0,
+    "task_3": 0.0,
+    "task_4": 0.0,
+    "task_5": 0.0,
+    "task_6": 0.0,
+    "task_7": 0.0
+  }
+}

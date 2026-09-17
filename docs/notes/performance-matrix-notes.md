@@ -51,7 +51,7 @@ Học xong Task 3 (t=3)   0.68        0.76        0.82        0.87
 
 ## 3. Những Việc Đã Triển Khai Trong Phase 12
 
-File mã nguồn: [`src/evaluation/performance_matrix.py`](file:///Users/vinhlq2512/code/research-code-lab/dataset-pipelines/continual-relation-extraction/src/evaluation/performance_matrix.py)
+File mã nguồn: [`src/evaluation/performance_matrix.py`](../../dataset-pipelines/continual-relation-extraction/src/evaluation/performance_matrix.py)
 
 1. **Khởi tạo lớp `PerformanceMatrix`**:
    - Quản lý mảng 2 chiều kích thước $T \times T$ (với $T$ là số lượng task continual learning).

@@ -1,0 +1,92 @@
+{
+  "dataset": "fewrel",
+  "matrix": [
+    [
+      1.0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    [
+      1.0,
+      1.0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    [
+      1.0,
+      1.0,
+      1.0,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      null,
+      null,
+      null,
+      null
+    ],
+    [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      null,
+      null,
+      null
+    ],
+    [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      null,
+      null
+    ],
+    [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      null
+    ],
+    [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ]
+  ],
+  "metadata": {
+    "predictor": "PerfectPredictor"
+  },
+  "metric": "accuracy",
+  "num_tasks": 8,
+  "seed": 42,
+  "task_order_path": "/Users/vinhlq2512/code/research-code-lab/dataset-pipelines/continual-relation-extraction/task-orders/fewrel/order_seed_42.json"
+}
