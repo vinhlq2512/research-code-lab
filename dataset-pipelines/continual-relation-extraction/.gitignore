@@ -6,5 +6,6 @@ __pycache__/
 data/raw/
 data/processed/
 data/tasks/
+reports/
 *.log
 .DS_Store

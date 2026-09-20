@@ -118,6 +118,23 @@ class TestFewRelLoader(unittest.TestCase):
         self.assertEqual(len(train_samples), 80 * 10)
         self.assertTrue(all(s.sample_id.startswith("fewrel_train_") for s in train_samples))
 
+    def test_sample_ids_and_mapping_are_deterministic_across_runs(self) -> None:
+        ds1 = FewRelDataset(self.data_dir, train_val_test_counts=(1, 0, 1))
+        ds2 = FewRelDataset(self.data_dir, train_val_test_counts=(1, 0, 1))
+
+        # 1. Relation mapping is deterministic
+        self.assertEqual(ds1.get_relation_to_id(), ds2.get_relation_to_id())
+        self.assertEqual(ds1.get_relations(), ds2.get_relations())
+
+        # 2. Sample IDs are deterministic
+        train1 = [s.sample_id for s in ds1.load_train()]
+        train2 = [s.sample_id for s in ds2.load_train()]
+        self.assertEqual(train1, train2)
+
+        test1 = [s.sample_id for s in ds1.load_test()]
+        test2 = [s.sample_id for s in ds2.load_test()]
+        self.assertEqual(test1, test2)
+
 
 if __name__ == "__main__":
     unittest.main()

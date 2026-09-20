@@ -350,11 +350,12 @@ docs/
 
 ## 7. Phase X: Final Verification Checklist
 
-- [ ] All unit tests pass cleanly (`tests/test_*.py`).
-- [ ] `scripts/inspect_fewrel.py` runs and prints valid sample & split statistics.
-- [ ] `scripts/generate_task_orders.py` reproducibly outputs task order JSONs for seeds 42, 43, 44.
-- [ ] `scripts/validate_pipeline.py` executes all 8 checkpoints and exits 0.
-- [ ] CSV and JSON performance matrices accurately distinguish missing cells (`None`) from 0.0.
-- [ ] TACRED preprocessing audit report written to `docs/datasets/tacred-preprocessing-check.md`.
-- [ ] `.gitignore` prevents committing raw data.
-- [ ] README.md clearly documents $A[t,j]$ semantics and usage.
+- [x] All unit tests pass cleanly (`tests/test_*.py`).
+- [x] `scripts/inspect_fewrel.py` runs and prints valid sample & split statistics.
+- [x] `scripts/generate_task_orders.py` reproducibly outputs task order JSONs for seeds 42, 43, 44.
+- [x] `scripts/validate_pipeline.py` executes all 8 checkpoints and exits 0.
+- [x] CSV and JSON performance matrices accurately distinguish missing cells (`None`) from 0.0.
+- [x] TACRED preprocessing audit report written to `docs/datasets/tacred-preprocessing-check.md`.
+- [x] `.gitignore` prevents committing raw data.
+- [x] README.md clearly documents $A[t,j]$ semantics and usage.
+
