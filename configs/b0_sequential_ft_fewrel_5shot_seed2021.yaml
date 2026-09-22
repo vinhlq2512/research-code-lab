@@ -1,0 +1,78 @@
+# ==============================================================================
+# B0 — Sequential Fine-Tuning Experimental Configuration
+# Protocol: FewRel Track A, 8 tasks × 10 relations, 5-shot, seed = 2021
+# Baseline Type: Pure Lower Bound (Zero Continual-Learning Mechanisms)
+# ==============================================================================
+
+experiment:
+  id: "B0"
+  name: "sequential_ft"
+  registry_id: "E001"
+  description: "Sequential Fine-Tuning baseline without replay, memory, prototype, or regularization"
+
+dataset:
+  name: "fewrel"
+  track: "A"
+  num_tasks: 8
+  relations_per_task: 10
+  total_relations: 80
+  train_shot: 5
+  val_shot: 5
+  max_test_per_relation: null  # null = use all available test instances (140 per relation)
+  raw_data_dir: "dataset-pipelines/continual-relation-extraction/data/raw/fewrel"
+  processed_mapping_path: "dataset-pipelines/continual-relation-extraction/data/processed/fewrel/relation_mapping.json"
+  task_order_path: "dataset-pipelines/continual-relation-extraction/task-orders/fewrel/order_seed_2021.json"
+
+seed: 2021
+
+model:
+  backbone: "bert-base-uncased"
+  tokenizer: "bert-base-uncased"
+  max_seq_length: 128
+  num_classes: 80
+  classifier_dropout: 0.1
+  classifier_type: "global_head"
+  preserve_old_classifier_weights: true
+  mask_unseen_classes: true
+
+continual:
+  method: "sequential_ft"
+  memory_size: 0
+  replay: false
+  prompt: false
+  prototype: false
+  router: false
+  knowledge_distillation: false
+  ema_teacher: false
+  regularization: false
+
+training:
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  batch_size: 16
+  epochs_per_task: 5
+  warmup_ratio: 0.1
+  optimizer: "AdamW"
+  lr_scheduler: "linear"
+  gradient_clip_norm: 1.0
+  device: "auto"  # auto selects cuda > mps > cpu
+
+evaluation:
+  evaluate_seen_tasks: true
+  save_per_task_metrics: true
+  primary_metric: "accuracy"
+  additional_metrics:
+    - "macro_f1"
+    - "average_incremental_accuracy"
+    - "average_forgetting"
+    - "backward_transfer"
+
+output:
+  results_dir: "results/fewrel/5shot/B0_sequential_ft/seed_2021"
+  metrics_file: "metrics.jsonl"
+  summary_file: "summary.json"
+  matrix_csv: "performance_matrix.csv"
+  matrix_json: "performance_matrix.json"
+  accuracy_plot: "plots/accuracy_over_tasks.png"
+  forgetting_plot: "plots/forgetting_curve.png"
+  checkpoint_dir: "checkpoints"
