@@ -1,0 +1,37 @@
+{
+  "final_average_accuracy": 0.8386231884057971,
+  "average_incremental_accuracy": 0.8566304347826087,
+  "average_forgetting": 0.07666666666666666,
+  "backward_transfer": -0.07666666666666666,
+  "most_forgotten_task": {
+    "task_id": 0,
+    "task_name": "T1",
+    "forgetting": 0.07666666666666666,
+    "initial_score": 0.8746376811594203,
+    "final_score": 0.7979710144927536
+  },
+  "per_task_forgetting": {
+    "task_0": 0.07666666666666666,
+    "task_1": 0.0
+  },
+  "old_vs_new_by_stage": {
+    "stage_1": {
+      "old_acc": 0.7979710144927536,
+      "new_acc": 0.8792753623188406
+    }
+  },
+  "incremental_accuracy": {
+    "T1": 0.8746376811594203,
+    "T2": 0.8386231884057971
+  },
+  "average_accuracy_by_stage": [
+    0.8746376811594203,
+    0.8386231884057971
+  ],
+  "evaluated_stage": 1,
+  "final_macro_f1": 0.9011851757253229,
+  "experiment": "B0",
+  "method": "sequential_ft",
+  "seed": 2021,
+  "shot": 5
+}

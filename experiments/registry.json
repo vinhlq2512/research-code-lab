@@ -1,0 +1,71 @@
+{
+  "experiments": [
+    {
+      "id": "E001",
+      "title": "Baseline B0: Sequential Fine-Tuning",
+      "method": "sequential_ft",
+      "baseline_role": "lower_bound",
+      "status": "completed",
+      "date": "2026-09-27",
+      "git_commit": "4d648ab79b7f3217b65b98de6065fb8496f2c7e1",
+      "benchmark": {
+        "dataset": "FewRel Track A",
+        "num_tasks": 8,
+        "relations_per_task": 10,
+        "total_relations": 80,
+        "train_shot": 5,
+        "val_shot": 5,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "auto"
+      },
+      "purity_boundary": {
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "prototypes_enabled": false,
+        "tree_hierarchy_enabled": false,
+        "prompt_tuning_enabled": false,
+        "routing_network_enabled": false,
+        "knowledge_distillation_enabled": false,
+        "regularizers": []
+      },
+      "results": {
+        "final_average_accuracy": 0.5976086956521739,
+        "final_macro_f1": 0.7113472661683395,
+        "average_incremental_accuracy": 0.7383518374741201,
+        "average_forgetting": 0.3212215320910974,
+        "backward_transfer": -0.3212215320910974,
+        "most_forgotten_task": {
+          "task_id": 0,
+          "task_name": "T1",
+          "initial_score": 0.8746376811594203,
+          "final_score": 0.3179710144927536,
+          "forgetting": 0.5566666666666666
+        }
+      },
+      "validation": {
+        "dod_validator": "experiments/validate_b0_results.py",
+        "checks_passed": 8,
+        "total_checks": 8,
+        "status": "PASSED"
+      },
+      "artifacts": {
+        "config_path": "configs/b0_sequential_ft_fewrel_5shot_seed2021.json",
+        "task_order_path": "dataset-pipelines/continual-relation-extraction/task-orders/fewrel/order_seed_2021.json",
+        "results_dir": "results/fewrel/5shot/B0_sequential_ft/seed_2021",
+        "performance_matrix_csv": "results/fewrel/5shot/B0_sequential_ft/seed_2021/performance_matrix.csv",
+        "performance_matrix_json": "results/fewrel/5shot/B0_sequential_ft/seed_2021/performance_matrix.json",
+        "metrics_log": "results/fewrel/5shot/B0_sequential_ft/seed_2021/metrics.jsonl",
+        "summary": "results/fewrel/5shot/B0_sequential_ft/seed_2021/summary.json",
+        "conclusion": "results/fewrel/5shot/B0_sequential_ft/seed_2021/conclusion.md",
+        "checkpoints_dir": "results/fewrel/5shot/B0_sequential_ft/seed_2021/checkpoints",
+        "plot_accuracy": "results/fewrel/5shot/B0_sequential_ft/seed_2021/plots/accuracy_over_tasks.png",
+        "plot_forgetting": "results/fewrel/5shot/B0_sequential_ft/seed_2021/plots/forgetting_curve.png",
+        "plot_accuracy_svg": "results/fewrel/5shot/B0_sequential_ft/seed_2021/plots/accuracy_over_tasks.svg",
+        "plot_forgetting_svg": "results/fewrel/5shot/B0_sequential_ft/seed_2021/plots/forgetting_curve.svg",
+        "dashboard_html": "results/fewrel/5shot/B0_sequential_ft/seed_2021/dashboard.html"
+      }
+    }
+  ]
+}
