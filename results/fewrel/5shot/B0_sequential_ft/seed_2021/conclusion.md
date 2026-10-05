@@ -1,7 +1,11 @@
 # Empirical Conclusion — B0 (Sequential Fine-Tuning Baseline)
 
+> **Execution Note (Reproducibility & Audit):**  
+> The numerical values below were produced during the pipeline & metric scaffold verification using `MockRelationClassifier`.  
+> Real deep learning execution with `BERTRelationClassifier` (`bert-base-uncased`) and full `model.pt` checkpoints will overwrite this once training on GPU/MPS finishes.
+
 ## 1. Executive Summary
-B0 Sequential Fine-Tuning was trained sequentially over 8 FewRel Track A tasks
+B0 Sequential Fine-Tuning was executed sequentially over 8 FewRel Track A tasks
 under 5-shot relation extraction with zero replay, memory, prototypes, or continual regularizers.
 
 - **Final Average Accuracy:** 59.76%

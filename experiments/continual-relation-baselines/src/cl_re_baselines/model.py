@@ -42,6 +42,8 @@ class BERTRelationClassifier:
         dropout_rate: float = 0.1,
         max_seq_length: int = 128,
         device: str = "auto",
+        relation_to_class_idx: dict[str, int] | None = None,
+        class_idx_to_rel_id: dict[int, int] | None = None,
     ) -> None:
         if not HAS_TORCH:
             raise ImportError(
@@ -53,6 +55,8 @@ class BERTRelationClassifier:
         self.num_classes = int(num_classes)
         self.dropout_rate = float(dropout_rate)
         self.max_seq_length = int(max_seq_length)
+        self.relation_to_class_idx = relation_to_class_idx
+        self.class_idx_to_rel_id = class_idx_to_rel_id
 
         # Device selection
         if device == "auto":
@@ -187,7 +191,10 @@ class BERTRelationClassifier:
             batch_input_ids.append(input_ids)
             batch_e1.append(e1_idx)
             batch_e2.append(e2_idx)
-            batch_labels.append(s.relation_id)
+            if self.relation_to_class_idx is not None:
+                batch_labels.append(self.relation_to_class_idx[s.relation])
+            else:
+                batch_labels.append(s.relation_id)
 
         max_len = max(len(ids) for ids in batch_input_ids)
         padded_ids: list[list[int]] = []
@@ -217,7 +224,7 @@ class BERTRelationClassifier:
         self.classifier.eval()
 
         predictions: list[int] = []
-        batch_size = 32
+        batch_size = 64
 
         for i in range(0, len(samples), batch_size):
             chunk = samples[i : i + batch_size]
@@ -229,6 +236,8 @@ class BERTRelationClassifier:
                 e2_indices=batch["e2_indices"],
             )
             preds = torch.argmax(logits, dim=-1).cpu().tolist()
+            if self.class_idx_to_rel_id is not None:
+                preds = [self.class_idx_to_rel_id[p] for p in preds]
             predictions.extend(preds)
 
         return predictions
@@ -241,6 +250,8 @@ class BERTRelationClassifier:
             "num_classes": self.num_classes,
             "seen_classes_count": self.seen_classes_count,
             "backbone_name": self.backbone_name,
+            "relation_to_class_idx": self.relation_to_class_idx,
+            "class_idx_to_rel_id": self.class_idx_to_rel_id,
         }
 
     def load_state_dict(self, state: dict[str, Any]) -> None:
@@ -249,3 +260,5 @@ class BERTRelationClassifier:
         self.classifier.load_state_dict(state["classifier"])
         self.num_classes = state["num_classes"]
         self.seen_classes_count = state["seen_classes_count"]
+        self.relation_to_class_idx = state.get("relation_to_class_idx")
+        self.class_idx_to_rel_id = state.get("class_idx_to_rel_id")

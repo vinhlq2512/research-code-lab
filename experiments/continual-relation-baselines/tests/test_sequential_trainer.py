@@ -198,6 +198,46 @@ class TestSequentialTrainer(unittest.TestCase):
             self.assertIn("average_forgetting", summary)
             self.assertIn("backward_transfer", summary)
 
+    def test_bert_model_relation_mapping(self) -> None:
+        """Verify that BERTRelationClassifier maps relations to continual class indices correctly."""
+        from cl_re_baselines.model import BERTRelationClassifier, HAS_TORCH
+
+        if not HAS_TORCH:
+            self.skipTest("PyTorch not installed")
+
+        rel_to_class = {"P99": 0, "P10": 1}
+        class_to_rel_id = {0: 99, 1: 10}
+
+        model = BERTRelationClassifier(
+            backbone_name="bert-base-uncased",
+            num_classes=80,
+            device="cpu",
+            relation_to_class_idx=rel_to_class,
+            class_idx_to_rel_id=class_to_rel_id,
+        )
+        model.set_seen_classes(2)
+
+        sample = RelationSample(
+            sample_id="test_1",
+            tokens=["A", "rel", "B"],
+            head_text="A",
+            head_start=0,
+            head_end=1,
+            tail_text="B",
+            tail_start=2,
+            tail_end=3,
+            relation="P99",
+            relation_id=99,
+        )
+
+        batch = model.encode_batch([sample])
+        # Even though relation_id is 99, the training label must be mapped to 0 (seen class)
+        self.assertEqual(batch["labels"].item(), 0)
+
+        preds = model.predict([sample])
+        # Prediction should be converted back to relation_id (99 or 10)
+        self.assertIn(preds[0], [99, 10])
+
 
 if __name__ == "__main__":
     unittest.main()

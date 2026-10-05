@@ -344,8 +344,8 @@ def generate_b0_plots(
     dashboard_html_path = Path(results_dir) / "dashboard.html"
 
     try:
-        from ...generate_plots_svg import generate_svg_and_html
-        generate_svg_and_html()
+        from generate_plots_svg import generate_svg_and_html
+        generate_svg_and_html(results_dir)
     except Exception:
         pass
 

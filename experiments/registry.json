@@ -5,7 +5,9 @@
       "title": "Baseline B0: Sequential Fine-Tuning",
       "method": "sequential_ft",
       "baseline_role": "lower_bound",
-      "status": "completed",
+      "execution_mode": "simulation_mock",
+      "note": "Initial scaffold verification run using MockRelationClassifier. Pending real BERT training.",
+      "status": "completed_simulation",
       "date": "2026-09-27",
       "git_commit": "4d648ab79b7f3217b65b98de6065fb8496f2c7e1",
       "benchmark": {

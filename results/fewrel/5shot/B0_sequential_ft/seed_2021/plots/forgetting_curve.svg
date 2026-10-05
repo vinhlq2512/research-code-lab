@@ -1,122 +1,137 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="100%" height="100%" style="background:#ffffff; font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;">
-<text x="450.0" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e293b">B0 Sequential Fine-Tuning: Catastrophic Forgetting Curves</text>
-<text x="450.0" y="52" text-anchor="middle" font-size="13" fill="#64748b">FewRel Track A (8 tasks × 10 relations, 5-shot, seed 2021) — M=0, No Replay</text>
-<rect x="80" y="70" width="640" height="380" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" rx="4"/>
-<line x1="80" y1="450.0" x2="720" y2="450.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
-<text x="68" y="454.0" text-anchor="end" font-size="12" fill="#64748b" font-weight="500">0%</text>
-<line x1="80" y1="374.0" x2="720" y2="374.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
-<text x="68" y="378.0" text-anchor="end" font-size="12" fill="#64748b" font-weight="500">20%</text>
-<line x1="80" y1="298.0" x2="720" y2="298.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
-<text x="68" y="302.0" text-anchor="end" font-size="12" fill="#64748b" font-weight="500">40%</text>
-<line x1="80" y1="222.0" x2="720" y2="222.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
-<text x="68" y="226.0" text-anchor="end" font-size="12" fill="#64748b" font-weight="500">60%</text>
-<line x1="80" y1="146.0" x2="720" y2="146.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
-<text x="68" y="150.0" text-anchor="end" font-size="12" fill="#64748b" font-weight="500">80%</text>
-<line x1="80" y1="70.0" x2="720" y2="70.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
-<text x="68" y="74.0" text-anchor="end" font-size="12" fill="#64748b" font-weight="500">100%</text>
-<line x1="80.0" y1="70" x2="80.0" y2="450" stroke="#e2e8f0" stroke-width="1"/>
-<text x="80.0" y="474" text-anchor="middle" font-size="12" fill="#334155" font-weight="bold">Stage 0</text>
-<text x="80.0" y="490" text-anchor="middle" font-size="11" fill="#64748b">(after T1)</text>
-<line x1="171.42857142857142" y1="70" x2="171.42857142857142" y2="450" stroke="#e2e8f0" stroke-width="1"/>
-<text x="171.42857142857142" y="474" text-anchor="middle" font-size="12" fill="#334155" font-weight="bold">Stage 1</text>
-<text x="171.42857142857142" y="490" text-anchor="middle" font-size="11" fill="#64748b">(after T2)</text>
-<line x1="262.85714285714283" y1="70" x2="262.85714285714283" y2="450" stroke="#e2e8f0" stroke-width="1"/>
-<text x="262.85714285714283" y="474" text-anchor="middle" font-size="12" fill="#334155" font-weight="bold">Stage 2</text>
-<text x="262.85714285714283" y="490" text-anchor="middle" font-size="11" fill="#64748b">(after T3)</text>
-<line x1="354.2857142857143" y1="70" x2="354.2857142857143" y2="450" stroke="#e2e8f0" stroke-width="1"/>
-<text x="354.2857142857143" y="474" text-anchor="middle" font-size="12" fill="#334155" font-weight="bold">Stage 3</text>
-<text x="354.2857142857143" y="490" text-anchor="middle" font-size="11" fill="#64748b">(after T4)</text>
-<line x1="445.71428571428567" y1="70" x2="445.71428571428567" y2="450" stroke="#e2e8f0" stroke-width="1"/>
-<text x="445.71428571428567" y="474" text-anchor="middle" font-size="12" fill="#334155" font-weight="bold">Stage 4</text>
-<text x="445.71428571428567" y="490" text-anchor="middle" font-size="11" fill="#64748b">(after T5)</text>
-<line x1="537.1428571428571" y1="70" x2="537.1428571428571" y2="450" stroke="#e2e8f0" stroke-width="1"/>
-<text x="537.1428571428571" y="474" text-anchor="middle" font-size="12" fill="#334155" font-weight="bold">Stage 5</text>
-<text x="537.1428571428571" y="490" text-anchor="middle" font-size="11" fill="#64748b">(after T6)</text>
-<line x1="628.5714285714286" y1="70" x2="628.5714285714286" y2="450" stroke="#e2e8f0" stroke-width="1"/>
-<text x="628.5714285714286" y="474" text-anchor="middle" font-size="12" fill="#334155" font-weight="bold">Stage 6</text>
-<text x="628.5714285714286" y="490" text-anchor="middle" font-size="11" fill="#64748b">(after T7)</text>
-<line x1="720.0" y1="70" x2="720.0" y2="450" stroke="#e2e8f0" stroke-width="1"/>
-<text x="720.0" y="474" text-anchor="middle" font-size="12" fill="#334155" font-weight="bold">Stage 7</text>
-<text x="720.0" y="490" text-anchor="middle" font-size="11" fill="#64748b">(after T8)</text>
-<text x="400.0" y="508" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">Continual Training Stage</text>
-<text transform="rotate(-90)" x="-260.0" y="24" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">Task Accuracy (%)</text>
-<polyline points="80.0,117.6 171.4,146.8 262.9,178.3 354.3,211.2 445.7,237.4 537.1,267.3 628.6,295.5 720.0,329.2" fill="none" stroke="#1f77b4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="80.0" cy="117.6" r="4.5" fill="#1f77b4" stroke="#ffffff" stroke-width="1.5"/>
-<text x="86.0" y="111.6" font-size="10" font-weight="bold" fill="#1f77b4">87.5%</text>
-<circle cx="171.4" cy="146.8" r="4.5" fill="#1f77b4" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="262.9" cy="178.3" r="4.5" fill="#1f77b4" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="354.3" cy="211.2" r="4.5" fill="#1f77b4" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="445.7" cy="237.4" r="4.5" fill="#1f77b4" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="537.1" cy="267.3" r="4.5" fill="#1f77b4" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="628.6" cy="295.5" r="4.5" fill="#1f77b4" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="720.0" cy="329.2" r="4.5" fill="#1f77b4" stroke="#ffffff" stroke-width="1.5"/>
-<text x="726.0" y="341.2" font-size="10" font-weight="bold" fill="#1f77b4">31.8%</text>
-<polyline points="171.4,115.9 262.9,146.1 354.3,175.5 445.7,206.8 537.1,238.0 628.6,271.6 720.0,298.2" fill="none" stroke="#ff7f0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="171.4" cy="115.9" r="4.5" fill="#ff7f0e" stroke="#ffffff" stroke-width="1.5"/>
-<text x="177.4" y="109.9" font-size="10" font-weight="bold" fill="#ff7f0e">87.9%</text>
-<circle cx="262.9" cy="146.1" r="4.5" fill="#ff7f0e" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="354.3" cy="175.5" r="4.5" fill="#ff7f0e" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="445.7" cy="206.8" r="4.5" fill="#ff7f0e" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="537.1" cy="238.0" r="4.5" fill="#ff7f0e" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="628.6" cy="271.6" r="4.5" fill="#ff7f0e" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="720.0" cy="298.2" r="4.5" fill="#ff7f0e" stroke="#ffffff" stroke-width="1.5"/>
-<text x="726.0" y="310.2" font-size="10" font-weight="bold" fill="#ff7f0e">39.9%</text>
-<polyline points="262.9,117.5 354.3,143.9 445.7,177.1 537.1,205.9 628.6,240.1 720.0,269.2" fill="none" stroke="#2ca02c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="262.9" cy="117.5" r="4.5" fill="#2ca02c" stroke="#ffffff" stroke-width="1.5"/>
-<text x="268.9" y="111.5" font-size="10" font-weight="bold" fill="#2ca02c">87.5%</text>
-<circle cx="354.3" cy="143.9" r="4.5" fill="#2ca02c" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="445.7" cy="177.1" r="4.5" fill="#2ca02c" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="537.1" cy="205.9" r="4.5" fill="#2ca02c" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="628.6" cy="240.1" r="4.5" fill="#2ca02c" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="720.0" cy="269.2" r="4.5" fill="#2ca02c" stroke="#ffffff" stroke-width="1.5"/>
-<text x="726.0" y="281.2" font-size="10" font-weight="bold" fill="#2ca02c">47.6%</text>
-<polyline points="354.3,114.1 445.7,144.1 537.1,177.7 628.6,205.0 720.0,236.9" fill="none" stroke="#d62728" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="354.3" cy="114.1" r="4.5" fill="#d62728" stroke="#ffffff" stroke-width="1.5"/>
-<text x="360.3" y="108.1" font-size="10" font-weight="bold" fill="#d62728">88.4%</text>
-<circle cx="445.7" cy="144.1" r="4.5" fill="#d62728" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="537.1" cy="177.7" r="4.5" fill="#d62728" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="628.6" cy="205.0" r="4.5" fill="#d62728" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="720.0" cy="236.9" r="4.5" fill="#d62728" stroke="#ffffff" stroke-width="1.5"/>
-<text x="726.0" y="248.9" font-size="10" font-weight="bold" fill="#d62728">56.1%</text>
-<polyline points="445.7,116.6 537.1,148.0 628.6,175.3 720.0,209.4" fill="none" stroke="#9467bd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="445.7" cy="116.6" r="4.5" fill="#9467bd" stroke="#ffffff" stroke-width="1.5"/>
-<text x="451.7" y="110.6" font-size="10" font-weight="bold" fill="#9467bd">87.7%</text>
-<circle cx="537.1" cy="148.0" r="4.5" fill="#9467bd" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="628.6" cy="175.3" r="4.5" fill="#9467bd" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="720.0" cy="209.4" r="4.5" fill="#9467bd" stroke="#ffffff" stroke-width="1.5"/>
-<text x="726.0" y="221.4" font-size="10" font-weight="bold" fill="#9467bd">63.3%</text>
-<polyline points="537.1,116.7 628.6,144.7 720.0,180.8" fill="none" stroke="#8c564b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="537.1" cy="116.7" r="4.5" fill="#8c564b" stroke="#ffffff" stroke-width="1.5"/>
-<text x="543.1" y="110.7" font-size="10" font-weight="bold" fill="#8c564b">87.7%</text>
-<circle cx="628.6" cy="144.7" r="4.5" fill="#8c564b" stroke="#ffffff" stroke-width="1.5"/>
-<circle cx="720.0" cy="180.8" r="4.5" fill="#8c564b" stroke="#ffffff" stroke-width="1.5"/>
-<text x="726.0" y="192.8" font-size="10" font-weight="bold" fill="#8c564b">70.8%</text>
-<polyline points="628.6,112.9 720.0,142.1" fill="none" stroke="#e377c2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="628.6" cy="112.9" r="4.5" fill="#e377c2" stroke="#ffffff" stroke-width="1.5"/>
-<text x="634.6" y="106.9" font-size="10" font-weight="bold" fill="#e377c2">88.7%</text>
-<circle cx="720.0" cy="142.1" r="4.5" fill="#e377c2" stroke="#ffffff" stroke-width="1.5"/>
-<text x="726.0" y="154.1" font-size="10" font-weight="bold" fill="#e377c2">81.0%</text>
-<rect x="735" y="73" width="155" height="239" fill="#f8fafc" stroke="#e2e8f0" rx="6" />
-<text x="745" y="89" font-size="12" font-weight="bold" fill="#1e293b">Task Traces</text>
-<line x1="745" y1="109" x2="765" y2="109" stroke="#1f77b4" stroke-width="3" stroke-linecap="round"/>
-<circle cx="755" cy="109" r="3.5" fill="#1f77b4" stroke="#fff" stroke-width="1"/>
-<text x="773" y="113" font-size="11" font-weight="600" fill="#334155">T1 <tspan font-weight="normal" fill="#ef4444">(-55.7%)</tspan></text>
-<line x1="745" y1="135" x2="765" y2="135" stroke="#ff7f0e" stroke-width="3" stroke-linecap="round"/>
-<circle cx="755" cy="135" r="3.5" fill="#ff7f0e" stroke="#fff" stroke-width="1"/>
-<text x="773" y="139" font-size="11" font-weight="600" fill="#334155">T2 <tspan font-weight="normal" fill="#ef4444">(-48.0%)</tspan></text>
-<line x1="745" y1="161" x2="765" y2="161" stroke="#2ca02c" stroke-width="3" stroke-linecap="round"/>
-<circle cx="755" cy="161" r="3.5" fill="#2ca02c" stroke="#fff" stroke-width="1"/>
-<text x="773" y="165" font-size="11" font-weight="600" fill="#334155">T3 <tspan font-weight="normal" fill="#ef4444">(-39.9%)</tspan></text>
-<line x1="745" y1="187" x2="765" y2="187" stroke="#d62728" stroke-width="3" stroke-linecap="round"/>
-<circle cx="755" cy="187" r="3.5" fill="#d62728" stroke="#fff" stroke-width="1"/>
-<text x="773" y="191" font-size="11" font-weight="600" fill="#334155">T4 <tspan font-weight="normal" fill="#ef4444">(-32.3%)</tspan></text>
-<line x1="745" y1="213" x2="765" y2="213" stroke="#9467bd" stroke-width="3" stroke-linecap="round"/>
-<circle cx="755" cy="213" r="3.5" fill="#9467bd" stroke="#fff" stroke-width="1"/>
-<text x="773" y="217" font-size="11" font-weight="600" fill="#334155">T5 <tspan font-weight="normal" fill="#ef4444">(-24.4%)</tspan></text>
-<line x1="745" y1="239" x2="765" y2="239" stroke="#8c564b" stroke-width="3" stroke-linecap="round"/>
-<circle cx="755" cy="239" r="3.5" fill="#8c564b" stroke="#fff" stroke-width="1"/>
-<text x="773" y="243" font-size="11" font-weight="600" fill="#334155">T6 <tspan font-weight="normal" fill="#ef4444">(-16.9%)</tspan></text>
-<line x1="745" y1="265" x2="765" y2="265" stroke="#e377c2" stroke-width="3" stroke-linecap="round"/>
-<circle cx="755" cy="265" r="3.5" fill="#e377c2" stroke="#fff" stroke-width="1"/>
-<text x="773" y="269" font-size="11" font-weight="600" fill="#334155">T7 <tspan font-weight="normal" fill="#ef4444">(-7.7%)</tspan></text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="100%" height="100%" style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+<rect width="1000" height="600" fill="#ffffff" rx="8"/>
+<text x="432.5" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">B0 Sequential Fine-Tuning: Catastrophic Forgetting Curves</text>
+<text x="432.5" y="58" text-anchor="middle" font-size="13" fill="#64748b">FewRel Track A (8 tasks × 10 relations, 5-shot, seed 2021) — M=0, No Replay</text>
+<rect x="85" y="85" width="695" height="435" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" rx="6"/>
+<line x1="85" y1="520.0" x2="780" y2="520.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="524.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">0%</text>
+<line x1="85" y1="433.0" x2="780" y2="433.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="437.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">20%</text>
+<line x1="85" y1="346.0" x2="780" y2="346.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="350.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">40%</text>
+<line x1="85" y1="259.0" x2="780" y2="259.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="263.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">60%</text>
+<line x1="85" y1="172.0" x2="780" y2="172.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="176.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">80%</text>
+<line x1="85" y1="85.0" x2="780" y2="85.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="89.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">100%</text>
+<line x1="85.0" y1="85" x2="85.0" y2="520" stroke="#e2e8f0" stroke-width="1"/>
+<text x="85.0" y="544" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="700">Stage 0</text>
+<text x="85.0" y="560" text-anchor="middle" font-size="11" fill="#64748b">(after T1)</text>
+<line x1="184.28571428571428" y1="85" x2="184.28571428571428" y2="520" stroke="#e2e8f0" stroke-width="1"/>
+<text x="184.28571428571428" y="544" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="700">Stage 1</text>
+<text x="184.28571428571428" y="560" text-anchor="middle" font-size="11" fill="#64748b">(after T2)</text>
+<line x1="283.57142857142856" y1="85" x2="283.57142857142856" y2="520" stroke="#e2e8f0" stroke-width="1"/>
+<text x="283.57142857142856" y="544" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="700">Stage 2</text>
+<text x="283.57142857142856" y="560" text-anchor="middle" font-size="11" fill="#64748b">(after T3)</text>
+<line x1="382.85714285714283" y1="85" x2="382.85714285714283" y2="520" stroke="#e2e8f0" stroke-width="1"/>
+<text x="382.85714285714283" y="544" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="700">Stage 3</text>
+<text x="382.85714285714283" y="560" text-anchor="middle" font-size="11" fill="#64748b">(after T4)</text>
+<line x1="482.1428571428571" y1="85" x2="482.1428571428571" y2="520" stroke="#e2e8f0" stroke-width="1"/>
+<text x="482.1428571428571" y="544" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="700">Stage 4</text>
+<text x="482.1428571428571" y="560" text-anchor="middle" font-size="11" fill="#64748b">(after T5)</text>
+<line x1="581.4285714285714" y1="85" x2="581.4285714285714" y2="520" stroke="#e2e8f0" stroke-width="1"/>
+<text x="581.4285714285714" y="544" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="700">Stage 5</text>
+<text x="581.4285714285714" y="560" text-anchor="middle" font-size="11" fill="#64748b">(after T6)</text>
+<line x1="680.7142857142857" y1="85" x2="680.7142857142857" y2="520" stroke="#e2e8f0" stroke-width="1"/>
+<text x="680.7142857142857" y="544" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="700">Stage 6</text>
+<text x="680.7142857142857" y="560" text-anchor="middle" font-size="11" fill="#64748b">(after T7)</text>
+<line x1="780.0" y1="85" x2="780.0" y2="520" stroke="#e2e8f0" stroke-width="1"/>
+<text x="780.0" y="544" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="700">Stage 7</text>
+<text x="780.0" y="560" text-anchor="middle" font-size="11" fill="#64748b">(after T8)</text>
+<text x="432.5" y="582" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">Continual Training Stage</text>
+<text transform="rotate(-90)" x="-302.5" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">Task Accuracy (%)</text>
+<polyline points="85.0,139.5 184.3,172.9 283.6,209.0 382.9,246.6 482.1,276.6 581.4,310.9 680.7,343.1 780.0,381.7" fill="none" stroke="#2563eb" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="85.0" cy="139.5" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="63.0" y="115.5" width="44" height="18" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="85.0" y="128.5" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2563eb">87.5%</text>
+<circle cx="184.3" cy="172.9" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="283.6" cy="209.0" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="382.9" cy="246.6" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="482.1" cy="276.6" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="581.4" cy="310.9" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="680.7" cy="343.1" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="780.0" cy="381.7" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="732.0" y="372.7" width="44" height="18" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="754.0" y="385.7" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2563eb">31.8%</text>
+<polyline points="184.3,137.5 283.6,172.1 382.9,205.7 482.1,241.6 581.4,277.3 680.7,315.8 780.0,346.3" fill="none" stroke="#ea580c" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="184.3" cy="137.5" r="5" fill="#ea580c" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="162.3" y="113.5" width="44" height="18" fill="#ffffff" stroke="#ea580c" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="184.3" y="126.5" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#ea580c">87.9%</text>
+<circle cx="283.6" cy="172.1" r="5" fill="#ea580c" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="382.9" cy="205.7" r="5" fill="#ea580c" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="482.1" cy="241.6" r="5" fill="#ea580c" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="581.4" cy="277.3" r="5" fill="#ea580c" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="680.7" cy="315.8" r="5" fill="#ea580c" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="780.0" cy="346.3" r="5" fill="#ea580c" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="732.0" y="337.3" width="44" height="18" fill="#ffffff" stroke="#ea580c" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="754.0" y="350.3" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#ea580c">39.9%</text>
+<polyline points="283.6,139.3 382.9,169.5 482.1,207.6 581.4,240.6 680.7,279.7 780.0,313.0" fill="none" stroke="#16a34a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="283.6" cy="139.3" r="5" fill="#16a34a" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="261.6" y="115.3" width="44" height="18" fill="#ffffff" stroke="#16a34a" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="283.6" y="128.3" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#16a34a">87.5%</text>
+<circle cx="382.9" cy="169.5" r="5" fill="#16a34a" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="482.1" cy="207.6" r="5" fill="#16a34a" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="581.4" cy="240.6" r="5" fill="#16a34a" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="680.7" cy="279.7" r="5" fill="#16a34a" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="780.0" cy="313.0" r="5" fill="#16a34a" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="732.0" y="304.0" width="44" height="18" fill="#ffffff" stroke="#16a34a" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="754.0" y="317.0" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#16a34a">47.6%</text>
+<polyline points="382.9,135.5 482.1,169.8 581.4,208.2 680.7,239.5 780.0,276.0" fill="none" stroke="#dc2626" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="382.9" cy="135.5" r="5" fill="#dc2626" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="360.9" y="111.5" width="44" height="18" fill="#ffffff" stroke="#dc2626" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="382.9" y="124.5" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#dc2626">88.4%</text>
+<circle cx="482.1" cy="169.8" r="5" fill="#dc2626" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="581.4" cy="208.2" r="5" fill="#dc2626" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="680.7" cy="239.5" r="5" fill="#dc2626" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="780.0" cy="276.0" r="5" fill="#dc2626" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="732.0" y="267.0" width="44" height="18" fill="#ffffff" stroke="#dc2626" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="754.0" y="280.0" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#dc2626">56.1%</text>
+<polyline points="482.1,138.4 581.4,174.3 680.7,205.5 780.0,244.6" fill="none" stroke="#9333ea" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="482.1" cy="138.4" r="5" fill="#9333ea" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="460.1" y="114.4" width="44" height="18" fill="#ffffff" stroke="#9333ea" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="482.1" y="127.4" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#9333ea">87.7%</text>
+<circle cx="581.4" cy="174.3" r="5" fill="#9333ea" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="680.7" cy="205.5" r="5" fill="#9333ea" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="780.0" cy="244.6" r="5" fill="#9333ea" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="732.0" y="235.6" width="44" height="18" fill="#ffffff" stroke="#9333ea" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="754.0" y="248.6" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#9333ea">63.3%</text>
+<polyline points="581.4,138.5 680.7,170.5 780.0,211.8" fill="none" stroke="#b45309" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="581.4" cy="138.5" r="5" fill="#b45309" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="559.4" y="114.5" width="44" height="18" fill="#ffffff" stroke="#b45309" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="581.4" y="127.5" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#b45309">87.7%</text>
+<circle cx="680.7" cy="170.5" r="5" fill="#b45309" stroke="#ffffff" stroke-width="1.8"/>
+<circle cx="780.0" cy="211.8" r="5" fill="#b45309" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="732.0" y="202.8" width="44" height="18" fill="#ffffff" stroke="#b45309" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="754.0" y="215.8" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#b45309">70.8%</text>
+<polyline points="680.7,134.1 780.0,167.5" fill="none" stroke="#db2777" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="680.7" cy="134.1" r="5" fill="#db2777" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="658.7" y="110.1" width="44" height="18" fill="#ffffff" stroke="#db2777" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="680.7" y="123.1" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#db2777">88.7%</text>
+<circle cx="780.0" cy="167.5" r="5" fill="#db2777" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="732.0" y="158.5" width="44" height="18" fill="#ffffff" stroke="#db2777" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="754.0" y="171.5" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#db2777">81.0%</text>
+<rect x="805" y="95" width="185" height="272" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="8" />
+<text x="821" y="119" font-size="13" font-weight="700" fill="#0f172a">Task Degradation</text>
+<line x1="821" y1="145" x2="845" y2="145" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round"/>
+<circle cx="833" cy="145" r="4" fill="#2563eb" stroke="#fff" stroke-width="1.5"/>
+<text x="853" y="149" font-size="12" font-weight="700" fill="#1e293b">T1: <tspan font-weight="bold" fill="#dc2626">-55.7%</tspan></text>
+<line x1="821" y1="177" x2="845" y2="177" stroke="#ea580c" stroke-width="3.5" stroke-linecap="round"/>
+<circle cx="833" cy="177" r="4" fill="#ea580c" stroke="#fff" stroke-width="1.5"/>
+<text x="853" y="181" font-size="12" font-weight="700" fill="#1e293b">T2: <tspan font-weight="bold" fill="#dc2626">-48.0%</tspan></text>
+<line x1="821" y1="209" x2="845" y2="209" stroke="#16a34a" stroke-width="3.5" stroke-linecap="round"/>
+<circle cx="833" cy="209" r="4" fill="#16a34a" stroke="#fff" stroke-width="1.5"/>
+<text x="853" y="213" font-size="12" font-weight="700" fill="#1e293b">T3: <tspan font-weight="bold" fill="#dc2626">-39.9%</tspan></text>
+<line x1="821" y1="241" x2="845" y2="241" stroke="#dc2626" stroke-width="3.5" stroke-linecap="round"/>
+<circle cx="833" cy="241" r="4" fill="#dc2626" stroke="#fff" stroke-width="1.5"/>
+<text x="853" y="245" font-size="12" font-weight="700" fill="#1e293b">T4: <tspan font-weight="bold" fill="#dc2626">-32.3%</tspan></text>
+<line x1="821" y1="273" x2="845" y2="273" stroke="#9333ea" stroke-width="3.5" stroke-linecap="round"/>
+<circle cx="833" cy="273" r="4" fill="#9333ea" stroke="#fff" stroke-width="1.5"/>
+<text x="853" y="277" font-size="12" font-weight="700" fill="#1e293b">T5: <tspan font-weight="bold" fill="#dc2626">-24.4%</tspan></text>
+<line x1="821" y1="305" x2="845" y2="305" stroke="#b45309" stroke-width="3.5" stroke-linecap="round"/>
+<circle cx="833" cy="305" r="4" fill="#b45309" stroke="#fff" stroke-width="1.5"/>
+<text x="853" y="309" font-size="12" font-weight="700" fill="#1e293b">T6: <tspan font-weight="bold" fill="#dc2626">-16.9%</tspan></text>
+<line x1="821" y1="337" x2="845" y2="337" stroke="#db2777" stroke-width="3.5" stroke-linecap="round"/>
+<circle cx="833" cy="337" r="4" fill="#db2777" stroke="#fff" stroke-width="1.5"/>
+<text x="853" y="341" font-size="12" font-weight="700" fill="#1e293b">T7: <tspan font-weight="bold" fill="#dc2626">-7.7%</tspan></text>
 </svg>

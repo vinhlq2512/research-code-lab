@@ -12,3 +12,16 @@ __pycache__/
 **/runs/
 **/wandb/
 reports/
+
+# Model checkpoints and weights (> 100MB binaries)
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.ckpt
+*.onnx
+
+# Jupyter Notebook & test coverage
+.ipynb_checkpoints/
+.coverage
+htmlcov/

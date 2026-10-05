@@ -121,9 +121,19 @@ class TestTaskBuilder(unittest.TestCase):
         self.assertIn("0 samples across all splits", str(ctx.exception))
 
     def test_real_fewrel_continual_task_building(self) -> None:
-        real_data_dir = Path("data/raw/fewrel")
-        order_path = Path("task-orders/fewrel/order_seed_42.json")
-        if not (real_data_dir / "train_wiki.json").exists() or not order_path.exists():
+        data_candidates = [
+            Path("data/raw/fewrel"),
+            Path("dataset-pipelines/continual-relation-extraction/data/raw/fewrel"),
+            Path(__file__).resolve().parent.parent / "data" / "raw" / "fewrel",
+        ]
+        order_candidates = [
+            Path("task-orders/fewrel/order_seed_42.json"),
+            Path("dataset-pipelines/continual-relation-extraction/task-orders/fewrel/order_seed_42.json"),
+            Path(__file__).resolve().parent.parent / "task-orders" / "fewrel" / "order_seed_42.json",
+        ]
+        real_data_dir = next((p for p in data_candidates if (p / "train_wiki.json").exists()), None)
+        order_path = next((p for p in order_candidates if p.exists()), None)
+        if not real_data_dir or not order_path:
             self.skipTest("FewRel raw data or order_seed_42.json missing")
 
         ds = FewRelDataset(real_data_dir)

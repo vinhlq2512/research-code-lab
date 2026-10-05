@@ -232,10 +232,39 @@ Tài liệu này lưu vết chi tiết mọi bước triển khai baseline B0 (S
 - [x] **Phase 4:** Sequential Fine-Tuning Trainer & Runner
 - [x] **Phase 5 & 6:** BERT Relation Classifier, Entity Markers & Seen-Class Masking
 - [x] **Phase 7:** Publication Visualization Module (Canvas PNG & Matplotlib)
-- [x] **Phase 8:** Automated Definition of Done (DoD) Validator
-- [x] **Phase 9:** 2-Task Smoke Test ($T_1 \to T_2$)
-- [x] **Phase 10:** Full 8-Task Baseline Run ($T_1 \to \dots \to T_8$)
-- [x] **Phase 11:** E001 Registration in `experiments/registry.yaml`
+## Phase 12: Publication Plot Visual Redesign & Quality Enhancement
+
+### 1. Đã làm gì (What)
+- Phát hiện lỗi hiển thị từ người dùng: ảnh SVG/PNG cũ có background trong suốt (bị nền tối của Dark Mode/trình xem ảnh đè lên làm mất chữ số), nhãn chữ bị tràn (clipping) ra viền phải và đè lên legend box.
+- Nâng cấp toàn diện bộ sinh đồ thị tại [`generate_plots_svg.py`](../../experiments/generate_plots_svg.py):
+  1. **Nền trắng cố định (Solid Background `#ffffff`):** Bảo đảm hiển thị chuẩn xác, tương phản cao trên mọi trình xem ảnh, chế độ Dark Mode của IDE, và khi chèn vào PDF/bài báo.
+  2. **Tăng kích thước & căn chỉnh lề (Resolution & Margins):** Tăng kích thước canvas lên $1000 \times 600$, mở rộng lề phải thành $220\text{px}$, dành riêng vùng hiển thị thông thoáng cho Legend Box.
+  3. **Chống tràn nhãn số (Data Badges with Inward Offset):** Tất cả các điểm bắt đầu và kết thúc đều có khung viền badge trắng bảo vệ text; các nhãn ở Stage 7 được dời sang bên trái điểm nút $26\text{px}$ để không bao giờ bị cắt viền.
+  4. **Tích hợp Rasterizer độ phân giải cao:** Tự động sinh đồng thời cả file vector SVG chuẩn in ấn và file raster PNG bằng công cụ hệ thống `sips`.
+  5. **Cập nhật cả 2 biểu đồ:**
+     - [`plots/forgetting_curve.png`](../../results/fewrel/5shot/B0_sequential_ft/seed_2021/plots/forgetting_curve.png) & `.svg`: Đầy đủ nhãn bắt đầu ($A_{j,j}$) và kết thúc ($A_{7,j}$), kèm bảng Legend chỉ rõ % sụt giảm của từng task.
+     - [`plots/accuracy_over_tasks.png`](../../results/fewrel/5shot/B0_sequential_ft/seed_2021/plots/accuracy_over_tasks.png) & `.svg`: Thể hiện rõ 3 đường $AA_t$ (xanh đậm), $New_t$ (xanh lá nét đứt), $Old_t$ (đỏ nét chấm).
+  6. **Đồng bộ bảng điều khiển HTML:** File [`dashboard.html`](../../results/fewrel/5shot/B0_sequential_ft/seed_2021/dashboard.html) tích hợp các biểu đồ mới với giao diện hiện đại, rõ nét.
+
+### 2. Tại sao phải làm (Why)
+- **Đảm bảo tính trực quan và thẩm mỹ khoa học:** Đồ thị là bộ mặt trực quan của bài báo khoa học. Việc hiển thị rõ ràng, không bị clipping, có độ tương phản cao giúp người phản biện và người đọc nắm bắt ngay hiện tượng Catastrophic Forgetting mà không bị nhầm lẫn.
+
+---
+
+## Audit Review & Scientific Rigor Enhancement (Phase 13)
+
+### 1. Vấn đề phát hiện qua Audit người dùng:
+1. **Thiếu phụ thuộc ML thực tế:** Môi trường `.venv` chưa cài `torch`, `transformers`, `pytest`.
+2. **Runner âm thầm fallback sang Mock:** Logic `use_mock = args.dry_run or not HAS_TORCH` tự động chuyển sang `MockRelationClassifier` khi thiếu PyTorch mà không báo lỗi dừng.
+3. **Validator chưa kiểm tra tính xác thực của trọng số:** Check 7 của `validate_b0_results.py` chỉ kiểm tra file JSON nhỏ `stage_metadata.json` mà chưa kiểm tra file nhị phân `model.pt`.
+4. **Artifacts hiện có phản ánh Mock:** Toàn bộ các con số trong `summary.json`, ma trận và `conclusion.md` mới là kết quả xác thực pipeline từ mock, chưa phải thực nghiệm từ weights BERT thật.
+
+### 2. Các hành động khắc phục đã triển khai:
+- [x] **Cài đặt thư viện ML:** Kích hoạt cài đặt `torch`, `transformers`, `pytest` vào `.venv`.
+- [x] **Thắt chặt Runner (`run_sequential_ft.py`):** Bổ sung cờ `--require-real-model` và bỏ hoàn toàn việc âm thầm fallback sang Mock. Nếu không có PyTorch hoặc mô hình thật, chương trình lập tức ném lỗi ngoại lệ dừng chương trình trừ khi người dùng chủ động truyền `--dry-run`.
+- [x] **Thắt chặt Validator (`validate_b0_results.py`):** Check 7 bắt buộc phải có file trọng số nhị phân `model.pt` có dung lượng $> 10\text{ MB}$. Nếu muốn kiểm tra trong môi trường mock scaffold, phải truyền tường minh `--allow-mock`.
+- [x] **Minh bạch hóa Registry & Conclusion:** Cập nhật `experiments/registry.yaml`, `registry.json` và `conclusion.md` nêu rõ trạng thái `simulation_mock` để không gây hiểu nhầm khoa học trong khi chờ lượt train GPU/BERT thật.
+
 
 
 

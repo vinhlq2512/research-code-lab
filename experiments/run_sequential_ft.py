@@ -104,6 +104,11 @@ def main() -> int:
         default=None,
         help="Override output directory (e.g. results/fewrel/5shot/B0_smoke_test/seed_2021)",
     )
+    parser.add_argument(
+        "--require-real-model",
+        action="store_true",
+        help="Strict mode: abort immediately if PyTorch or deep learning weights are missing. Disallow silent mock fallback.",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -163,18 +168,28 @@ def main() -> int:
     # 4. Instantiate Model
     print("\n[4/5] Initializing model...")
     device_override = args.device or config.get("training", {}).get("device", "auto")
-    use_mock = args.dry_run or not HAS_TORCH
 
-    if use_mock:
-        if not HAS_TORCH and not args.dry_run:
-            print("  [NOTE] PyTorch is not installed in the environment. Falling back to MockRelationClassifier simulation.")
-        else:
-            print("  Running in simulation mode with MockRelationClassifier.")
+    if args.dry_run:
+        print("  Running in simulation mode with MockRelationClassifier (--dry-run specified).")
         model = MockRelationClassifier(
             num_classes=int(config.get("model", {}).get("num_classes", 80)),
             seed=seed,
         )
     else:
+        if not HAS_TORCH:
+            error_msg = (
+                "FATAL: PyTorch/Transformers is not installed in the environment.\n"
+                "Real BERT training cannot proceed without PyTorch.\n"
+                "To run a fast zero-dependency simulation, pass --dry-run explicitly.\n"
+                "Otherwise, install dependencies via: pip install torch transformers"
+            )
+            print(f"  [ERROR] {error_msg}")
+            raise RuntimeError(error_msg)
+
+        relation_to_id = dataset.get_relation_to_id()
+        relation_to_class_idx = {rel: idx for idx, rel in enumerate(task_order.all_relations)}
+        class_idx_to_rel_id = {idx: relation_to_id[rel] for rel, idx in relation_to_class_idx.items()}
+
         print(f"  Initializing BERTRelationClassifier ({config.get('model', {}).get('backbone')}) on device '{device_override}'...")
         model = BERTRelationClassifier(
             backbone_name=config.get("model", {}).get("backbone", "bert-base-uncased"),
@@ -182,6 +197,8 @@ def main() -> int:
             dropout_rate=float(config.get("model", {}).get("classifier_dropout", 0.1)),
             max_seq_length=int(config.get("model", {}).get("max_seq_length", 128)),
             device=device_override,
+            relation_to_class_idx=relation_to_class_idx,
+            class_idx_to_rel_id=class_idx_to_rel_id,
         )
 
     # 5. Run Sequential Fine-Tuning Trainer

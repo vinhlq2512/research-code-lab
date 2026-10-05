@@ -98,8 +98,13 @@ class TestFewRelLoader(unittest.TestCase):
         self.assertEqual(loaded, {"P17": 0, "P19": 1, "P20": 2})
 
     def test_real_fewrel_data_if_available(self) -> None:
-        real_data_dir = Path("data/raw/fewrel")
-        if not (real_data_dir / "train_wiki.json").exists():
+        candidates = [
+            Path("data/raw/fewrel"),
+            Path("dataset-pipelines/continual-relation-extraction/data/raw/fewrel"),
+            Path(__file__).resolve().parent.parent / "data" / "raw" / "fewrel",
+        ]
+        real_data_dir = next((p for p in candidates if (p / "train_wiki.json").exists()), None)
+        if not real_data_dir:
             self.skipTest("Real FewRel data not available")
 
         # Test with a small slice count to ensure fast testing
