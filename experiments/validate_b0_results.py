@@ -54,7 +54,6 @@ def validate_b0(
     results_dir: Path | str,
     config_path: Path | str,
     task_order_path: Path | str,
-    allow_mock: bool = False,
 ) -> bool:
     """Rigorous Definition of Done (DoD) Validator for B0 Sequential Fine-Tuning."""
     res_dir = resolve_path(results_dir)
@@ -243,21 +242,19 @@ def validate_b0(
         assert stage_dir.exists(), f"Missing checkpoint for stage after_T{t + 1}"
         assert (stage_dir / "stage_metadata.json").exists(), f"Missing stage_metadata.json in {stage_dir}"
 
-        if not allow_mock:
-            # Rigorous check: require genuine PyTorch model weights
-            pt_file = stage_dir / "model.pt"
-            assert pt_file.exists(), (
-                f"Missing real model checkpoint 'model.pt' in {stage_dir}. "
-                f"Found only simulated/mock state. Real BERT weights are required for official validation."
-            )
-            file_size_mb = pt_file.stat().st_size / (1024 * 1024)
-            assert file_size_mb > 10.0, (
-                f"Checkpoint {pt_file} is suspiciously small ({file_size_mb:.2f} MB). "
-                f"BERT-base checkpoint must contain full weights."
-            )
+        # Rigorous check: require genuine PyTorch model weights
+        pt_file = stage_dir / "model.pt"
+        assert pt_file.exists(), (
+            f"Missing real model checkpoint 'model.pt' in {stage_dir}. "
+            f"Real BERT weights are strictly required for validation."
+        )
+        file_size_mb = pt_file.stat().st_size / (1024 * 1024)
+        assert file_size_mb > 10.0, (
+            f"Checkpoint {pt_file} is suspiciously small ({file_size_mb:.2f} MB). "
+            f"BERT-base checkpoint must contain full weights."
+        )
 
-    mode_label = "MOCK SIMULATION (Warning: Not real BERT weights)" if allow_mock else "REAL PYTORCH WEIGHTS VERIFIED"
-    print(f"  [PASS] All 8 stage checkpoints (after_T1..after_T8) exist [{mode_label}].")
+    print("  [PASS] All 8 stage checkpoints (after_T1..after_T8) exist [REAL PYTORCH WEIGHTS VERIFIED].")
 
     # -------------------------------------------------------------
     # 8. Plots Validation
@@ -305,11 +302,6 @@ def main() -> int:
         default="dataset-pipelines/continual-relation-extraction/task-orders/fewrel/order_seed_2021.json",
         help="Path to task order JSON file",
     )
-    parser.add_argument(
-        "--allow-mock",
-        action="store_true",
-        help="Allow simulated mock state dicts instead of requiring real BERT PyTorch model.pt checkpoints.",
-    )
     args = parser.parse_args()
 
     try:
@@ -317,7 +309,6 @@ def main() -> int:
             results_dir=args.results_dir,
             config_path=args.config,
             task_order_path=args.task_order,
-            allow_mock=args.allow_mock,
         )
         return 0 if success else 1
     except AssertionError as e:

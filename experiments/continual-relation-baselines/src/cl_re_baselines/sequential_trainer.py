@@ -90,66 +90,65 @@ class SequentialFTTrainer:
         weight_decay = float(self.config.get("training", {}).get("weight_decay", 0.01))
         warmup_ratio = float(self.config.get("training", {}).get("warmup_ratio", 0.1))
 
-        if HAS_TORCH and hasattr(self.model, "encoder") and hasattr(self.model, "classifier"):
-            # Real PyTorch training loop
-            device = self.model.device
-            self.model.encoder.train()
-            self.model.classifier.train()
+        if not (HAS_TORCH and hasattr(self.model, "encoder") and hasattr(self.model, "classifier")):
+            raise TypeError(
+                "SequentialFTTrainer requires a real PyTorch BERTRelationClassifier model with encoder and classifier."
+            )
 
-            # Group parameters with weight decay
-            no_decay = ["bias", "LayerNorm.weight"]
-            optimizer_grouped_parameters = [
-                {
-                    "params": [p for n, p in self.model.encoder.named_parameters() if not any(nd in n for nd in no_decay)]
-                    + [p for n, p in self.model.classifier.named_parameters() if not any(nd in n for nd in no_decay)],
-                    "weight_decay": weight_decay,
-                },
-                {
-                    "params": [p for n, p in self.model.encoder.named_parameters() if any(nd in n for nd in no_decay)]
-                    + [p for n, p in self.model.classifier.named_parameters() if any(nd in n for nd in no_decay)],
-                    "weight_decay": 0.0,
-                },
-            ]
+        # Real PyTorch training loop
+        device = self.model.device
+        self.model.encoder.train()
+        self.model.classifier.train()
 
-            optimizer = torch.optim.AdamW(optimizer_grouped_parameters, lr=lr)
-            total_steps = max(1, (len(train_samples) // batch_size + (1 if len(train_samples) % batch_size else 0)) * epochs)
-            warmup_steps = int(total_steps * warmup_ratio)
-            scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps)
+        # Group parameters with weight decay
+        no_decay = ["bias", "LayerNorm.weight"]
+        optimizer_grouped_parameters = [
+            {
+                "params": [p for n, p in self.model.encoder.named_parameters() if not any(nd in n for nd in no_decay)]
+                + [p for n, p in self.model.classifier.named_parameters() if not any(nd in n for nd in no_decay)],
+                "weight_decay": weight_decay,
+            },
+            {
+                "params": [p for n, p in self.model.encoder.named_parameters() if any(nd in n for nd in no_decay)]
+                + [p for n, p in self.model.classifier.named_parameters() if any(nd in n for nd in no_decay)],
+                "weight_decay": 0.0,
+            },
+        ]
 
-            loss_fn = nn.CrossEntropyLoss()
+        optimizer = torch.optim.AdamW(optimizer_grouped_parameters, lr=lr)
+        total_steps = max(1, (len(train_samples) // batch_size + (1 if len(train_samples) % batch_size else 0)) * epochs)
+        warmup_steps = int(total_steps * warmup_ratio)
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps)
 
-            for epoch in range(epochs):
-                batches = batch_samples(train_samples, batch_size=batch_size, shuffle=True)
-                epoch_loss = 0.0
+        loss_fn = nn.CrossEntropyLoss()
 
-                for b in batches:
-                    optimizer.zero_grad()
-                    batch_data = self.model.encode_batch(b)
-                    logits = self.model.forward(
-                        input_ids=batch_data["input_ids"],
-                        attention_mask=batch_data["attention_mask"],
-                        e1_indices=batch_data["e1_indices"],
-                        e2_indices=batch_data["e2_indices"],
-                    )
-                    # Compute cross entropy over seen classes
-                    labels = batch_data["labels"]
-                    loss = loss_fn(logits, labels)
-                    loss.backward()
+        for epoch in range(epochs):
+            batches = batch_samples(train_samples, batch_size=batch_size, shuffle=True)
+            epoch_loss = 0.0
 
-                    nn.utils.clip_grad_norm_(self.model.encoder.parameters(), 1.0)
-                    nn.utils.clip_grad_norm_(self.model.classifier.parameters(), 1.0)
+            for b in batches:
+                optimizer.zero_grad()
+                batch_data = self.model.encode_batch(b)
+                logits = self.model.forward(
+                    input_ids=batch_data["input_ids"],
+                    attention_mask=batch_data["attention_mask"],
+                    e1_indices=batch_data["e1_indices"],
+                    e2_indices=batch_data["e2_indices"],
+                )
+                # Compute cross entropy over seen classes
+                labels = batch_data["labels"]
+                loss = loss_fn(logits, labels)
+                loss.backward()
 
-                    optimizer.step()
-                    scheduler.step()
-                    epoch_loss += float(loss.item())
+                nn.utils.clip_grad_norm_(self.model.encoder.parameters(), 1.0)
+                nn.utils.clip_grad_norm_(self.model.classifier.parameters(), 1.0)
 
-                avg_loss = epoch_loss / max(1, len(batches))
-                logger.info(f"Stage {stage} | Epoch {epoch + 1}/{epochs} | Loss: {avg_loss:.4f}")
+                optimizer.step()
+                scheduler.step()
+                epoch_loss += float(loss.item())
 
-        elif hasattr(self.model, "set_training_stage"):
-            # Mock / CPU model simulation
-            relation_ids = [s.relation_id for s in train_samples]
-            self.model.set_training_stage(stage, relation_ids)
+            avg_loss = epoch_loss / max(1, len(batches))
+            logger.info(f"Stage {stage} | Epoch {epoch + 1}/{epochs} | Loss: {avg_loss:.4f}")
 
     def evaluate_seen_tasks(self, stage: int) -> dict[int, dict[str, float]]:
         """Evaluate current model on all observed tasks j = 0..stage."""

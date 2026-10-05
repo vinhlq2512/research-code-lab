@@ -163,7 +163,18 @@ class TestSequentialTrainer(unittest.TestCase):
                 "output": {"results_dir": str(results_dir)},
             }
 
-            model = MockRelationClassifier(num_classes=80, seed=2021)
+            all_rels = task_0_rels + task_1_rels
+            rel_to_class = {r: i for i, r in enumerate(all_rels)}
+            class_to_rel_id = {i: i for i in range(len(all_rels))}
+
+            from cl_re_baselines.model import BERTRelationClassifier
+            model = BERTRelationClassifier(
+                backbone_name="bert-base-uncased",
+                num_classes=80,
+                device="cpu",
+                relation_to_class_idx=rel_to_class,
+                class_idx_to_rel_id=class_to_rel_id,
+            )
             trainer = SequentialFTTrainer(
                 config=config,
                 tasks=[task_0, task_1],

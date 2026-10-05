@@ -22,16 +22,8 @@ from evaluation.evaluator import Evaluator
 from task_generation.task_builder import ContinualTaskBuilder
 from task_generation.task_order import TaskOrder
 
-from cl_re_baselines.mock_model import MockRelationClassifier
+from cl_re_baselines.model import BERTRelationClassifier
 from cl_re_baselines.sequential_trainer import SequentialFTTrainer
-
-# Check for PyTorch
-try:
-    import torch
-    from cl_re_baselines.model import BERTRelationClassifier
-    HAS_TORCH = True
-except ImportError:
-    HAS_TORCH = False
 
 
 def resolve_path(candidate: str | Path, base_dir: Path = REPO_ROOT) -> Path:
@@ -82,11 +74,6 @@ def main() -> int:
         help="Path to experiment config file (JSON or YAML)",
     )
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Run fast simulation using MockRelationClassifier without GPU/PyTorch",
-    )
-    parser.add_argument(
         "--num-tasks",
         type=int,
         default=None,
@@ -103,11 +90,6 @@ def main() -> int:
         type=str,
         default=None,
         help="Override output directory (e.g. results/fewrel/5shot/B0_smoke_test/seed_2021)",
-    )
-    parser.add_argument(
-        "--require-real-model",
-        action="store_true",
-        help="Strict mode: abort immediately if PyTorch or deep learning weights are missing. Disallow silent mock fallback.",
     )
     args = parser.parse_args()
 
@@ -169,37 +151,20 @@ def main() -> int:
     print("\n[4/5] Initializing model...")
     device_override = args.device or config.get("training", {}).get("device", "auto")
 
-    if args.dry_run:
-        print("  Running in simulation mode with MockRelationClassifier (--dry-run specified).")
-        model = MockRelationClassifier(
-            num_classes=int(config.get("model", {}).get("num_classes", 80)),
-            seed=seed,
-        )
-    else:
-        if not HAS_TORCH:
-            error_msg = (
-                "FATAL: PyTorch/Transformers is not installed in the environment.\n"
-                "Real BERT training cannot proceed without PyTorch.\n"
-                "To run a fast zero-dependency simulation, pass --dry-run explicitly.\n"
-                "Otherwise, install dependencies via: pip install torch transformers"
-            )
-            print(f"  [ERROR] {error_msg}")
-            raise RuntimeError(error_msg)
+    relation_to_id = dataset.get_relation_to_id()
+    relation_to_class_idx = {rel: idx for idx, rel in enumerate(task_order.all_relations)}
+    class_idx_to_rel_id = {idx: relation_to_id[rel] for rel, idx in relation_to_class_idx.items()}
 
-        relation_to_id = dataset.get_relation_to_id()
-        relation_to_class_idx = {rel: idx for idx, rel in enumerate(task_order.all_relations)}
-        class_idx_to_rel_id = {idx: relation_to_id[rel] for rel, idx in relation_to_class_idx.items()}
-
-        print(f"  Initializing BERTRelationClassifier ({config.get('model', {}).get('backbone')}) on device '{device_override}'...")
-        model = BERTRelationClassifier(
-            backbone_name=config.get("model", {}).get("backbone", "bert-base-uncased"),
-            num_classes=int(config.get("model", {}).get("num_classes", 80)),
-            dropout_rate=float(config.get("model", {}).get("classifier_dropout", 0.1)),
-            max_seq_length=int(config.get("model", {}).get("max_seq_length", 128)),
-            device=device_override,
-            relation_to_class_idx=relation_to_class_idx,
-            class_idx_to_rel_id=class_idx_to_rel_id,
-        )
+    print(f"  Initializing BERTRelationClassifier ({config.get('model', {}).get('backbone')}) on device '{device_override}'...")
+    model = BERTRelationClassifier(
+        backbone_name=config.get("model", {}).get("backbone", "bert-base-uncased"),
+        num_classes=int(config.get("model", {}).get("num_classes", 80)),
+        dropout_rate=float(config.get("model", {}).get("classifier_dropout", 0.1)),
+        max_seq_length=int(config.get("model", {}).get("max_seq_length", 128)),
+        device=device_override,
+        relation_to_class_idx=relation_to_class_idx,
+        class_idx_to_rel_id=class_idx_to_rel_id,
+    )
 
     # 5. Run Sequential Fine-Tuning Trainer
     print("\n[5/5] Executing Sequential Fine-Tuning across stages...")
