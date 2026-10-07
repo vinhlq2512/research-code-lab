@@ -8,4 +8,5 @@ updated: 2026-07-18
 
 ## Workflow & Communication Preferences
 - **Phase Execution Transparency**: After each phase is executed, always record a structured note detailing WHAT was done and the exact scientific/engineering rationale WHY it was done, allowing the user to review and trace all decisions.
+- **Git Commit Authorization**: NEVER execute `git commit` automatically. ONLY commit when the user explicitly gives a command or request to commit.
 

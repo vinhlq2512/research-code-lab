@@ -2,6 +2,7 @@
 
 ## User
 - [user] Always record structured notes (What & Why) after each phase → user-preferences.md
+- [user] Only commit when explicitly instructed by user → user-preferences.md
 
 ## Project
 - [project] Always create a new dedicated branch for major code changes → project-conventions.md

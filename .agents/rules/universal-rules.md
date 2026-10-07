@@ -31,3 +31,11 @@ When user's prompt is NOT in English:
 - **Infra/Safety**: 5-Phase Deployment. Verify secrets security.
 
 ---
+
+## 🛑 Git Commit Policy (Strict Mandatory)
+
+- **NEVER auto-commit**: Do NOT execute `git commit` automatically or proactively after modifying code.
+- **Explicit User Command Only**: ONLY execute `git commit` when the user explicitly requests or commands it (e.g. "commit cho tôi", "commit this", "hãy commit").
+- **Inspect before committing**: When requested to commit, always verify which files should be committed and ensure temporary, secret, or unnecessary files are excluded/ignored.
+
+---
