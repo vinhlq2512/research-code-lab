@@ -68,6 +68,47 @@
         "plot_forgetting_svg": "results/fewrel/5shot/B0_sequential_ft/seed_2021/plots/forgetting_curve.svg",
         "dashboard_html": "results/fewrel/5shot/B0_sequential_ft/seed_2021/dashboard.html"
       }
+    },
+    {
+      "id": "E002",
+      "title": "Upper Bound: Joint Training (Multitask)",
+      "method": "joint_training",
+      "baseline_role": "upper_bound",
+      "execution_mode": "real_bert_mps",
+      "note": "Official Upper Bound benchmark where all 80 relations are learned jointly in a single training session on Apple Silicon MPS.",
+      "status": "completed_real",
+      "date": "2026-10-08",
+      "benchmark": {
+        "dataset": "FewRel Track A",
+        "num_tasks": 8,
+        "relations_per_task": 10,
+        "total_relations": 80,
+        "train_shot": 5,
+        "val_shot": 5,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "mps"
+      },
+      "results": {
+        "overall_test_accuracy": 0.5211594202898551,
+        "overall_test_macro_f1": 0.4861832725322632,
+        "best_val_epoch": 15,
+        "best_val_accuracy": 0.5325,
+        "accuracy_gain_over_b0": 0.4335144927536232,
+        "macro_f1_gain_over_b0": 0.38927568438891713
+      },
+      "artifacts": {
+        "config_path": "configs/upper_bound_joint_fewrel_5shot_seed2021.json",
+        "task_order_path": "dataset-pipelines/continual-relation-extraction/task-orders/fewrel/order_seed_2021.json",
+        "results_dir": "results/fewrel/5shot/Upper_Bound_joint/seed_2021",
+        "summary": "results/fewrel/5shot/Upper_Bound_joint/seed_2021/summary.json",
+        "per_task_breakdown_csv": "results/fewrel/5shot/Upper_Bound_joint/seed_2021/per_task_breakdown.csv",
+        "per_task_breakdown_json": "results/fewrel/5shot/Upper_Bound_joint/seed_2021/per_task_breakdown.json",
+        "best_checkpoint": "results/fewrel/5shot/Upper_Bound_joint/seed_2021/best_model.pt",
+        "training_log": "results/fewrel/5shot/Upper_Bound_joint/seed_2021/training_log.jsonl",
+        "conclusion": "results/fewrel/5shot/Upper_Bound_joint/seed_2021/conclusion.md"
+      }
     }
   ]
 }

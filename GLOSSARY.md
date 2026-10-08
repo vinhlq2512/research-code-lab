@@ -19,3 +19,7 @@ _Avoid_: Strong Baseline, Augmented Baseline
 **Catastrophic Forgetting (AF)**:
 The phenomenon where a neural network precipitously drops performance on previously learned tasks upon learning new tasks.
 _Avoid_: Memory drift, degradation
+
+**Joint Training (Upper Bound)**:
+The theoretical and empirical upper-bound benchmark where all tasks, classes, and training samples are trained simultaneously in a single multitask session without sequential task shifts or temporal isolation.
+_Avoid_: Multitask baseline, Full-data baseline

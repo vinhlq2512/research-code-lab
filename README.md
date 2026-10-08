@@ -17,11 +17,22 @@ research-code-lab/
   paper-reproductions/       Code theo từng paper hoặc repo paper gốc đã chỉnh sửa.
   dataset-pipelines/         Pipeline tải, normalize, split task, build benchmark.
   experiments/               Script chạy thử nghiệm, ablation, launch config.
+  notebooks/                 Jupyter Notebooks chuẩn hóa chạy trực tiếp trên Google Colab.
   shared/                    Utility dùng chung giữa nhiều thử nghiệm.
   reports/                   Manifest, metric summary, notebook/report đã xuất.
   promote-candidates/        Code đã đủ ổn để chuẩn bị đưa sang source chính.
   docs/                      Ghi chú kỹ thuật về quy ước, dataset, paper protocol.
 ```
+
+## Google Colab Notebooks
+
+Chạy trực tiếp các benchmark trên Google Colab (GPU T4/V100/A100):
+
+- **Baseline B0 (Sequential Fine-Tuning - Lower Bound):** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinhlq2512/research-code-lab/blob/main/notebooks/b0_sequential_ft.ipynb)
+- **Upper Bound (Joint Training - Multitask):** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinhlq2512/research-code-lab/blob/main/notebooks/upper_bound_joint.ipynb)
+
+Xem chi tiết hướng dẫn tại [notebooks/README.md](./notebooks/README.md).
+
 
 ## Subprojects hiện có
 

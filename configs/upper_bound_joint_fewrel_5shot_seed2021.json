@@ -1,0 +1,55 @@
+{
+  "experiment": {
+    "id": "UPPER_BOUND",
+    "name": "joint_training",
+    "registry_id": "E002",
+    "description": "Upper Bound Joint Training (Multitask) on all 80 relations simultaneously"
+  },
+  "dataset": {
+    "name": "fewrel",
+    "track": "A",
+    "num_tasks": 8,
+    "relations_per_task": 10,
+    "total_relations": 80,
+    "train_shot": 5,
+    "val_shot": 5,
+    "max_test_per_relation": 140,
+    "raw_data_dir": "dataset-pipelines/continual-relation-extraction/data/raw/fewrel",
+    "task_order_path": "dataset-pipelines/continual-relation-extraction/task-orders/fewrel/order_seed_2021.json"
+  },
+  "seed": 2021,
+  "model": {
+    "backbone": "bert-base-uncased",
+    "tokenizer": "bert-base-uncased",
+    "max_seq_length": 128,
+    "num_classes": 80,
+    "classifier_dropout": 0.1,
+    "classifier_type": "global_head",
+    "mask_unseen_classes": false
+  },
+  "training": {
+    "learning_rate": 2.0e-5,
+    "weight_decay": 0.01,
+    "batch_size": 16,
+    "epochs": 15,
+    "warmup_ratio": 0.1,
+    "optimizer": "AdamW",
+    "lr_scheduler": "linear",
+    "gradient_clip_norm": 1.0,
+    "device": "mps"
+  },
+  "evaluation": {
+    "eval_batch_size": 64,
+    "primary_metric": "accuracy",
+    "per_task_breakdown": true
+  },
+  "output": {
+    "results_dir": "results/fewrel/5shot/Upper_Bound_joint/seed_2021",
+    "summary_file": "summary.json",
+    "breakdown_csv": "per_task_breakdown.csv",
+    "breakdown_json": "per_task_breakdown.json",
+    "best_checkpoint": "best_model.pt",
+    "training_log": "training_log.jsonl",
+    "conclusion_file": "conclusion.md"
+  }
+}

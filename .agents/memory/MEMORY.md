@@ -9,4 +9,6 @@
 - [project] AG Kit only supports Gemini CLI and Google Antigravity (not other AI coding tools) → project-conventions.md
 - [project] Component metadata uses SemVer while toolkit releases use CalVer → tech-decisions.md
 - [project] B0 baseline execution notes with What & Why for each phase → b0-execution-notes.md
+- [project] Upper Bound (Joint Training) execution notes with What & Why → upper-bound-execution-notes.md
+
 

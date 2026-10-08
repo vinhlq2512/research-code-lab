@@ -1,0 +1,66 @@
+[
+  {
+    "task_id": 0,
+    "task_name": "T1",
+    "num_relations": 10,
+    "sample_count": 6900,
+    "accuracy": 0.5140579710144928,
+    "macro_f1": 0.5920831303252397
+  },
+  {
+    "task_id": 1,
+    "task_name": "T2",
+    "num_relations": 10,
+    "sample_count": 6900,
+    "accuracy": 0.5111594202898551,
+    "macro_f1": 0.6235627010547573
+  },
+  {
+    "task_id": 2,
+    "task_name": "T3",
+    "num_relations": 10,
+    "sample_count": 6900,
+    "accuracy": 0.6040579710144928,
+    "macro_f1": 0.6725073252513573
+  },
+  {
+    "task_id": 3,
+    "task_name": "T4",
+    "num_relations": 10,
+    "sample_count": 6900,
+    "accuracy": 0.5153623188405797,
+    "macro_f1": 0.6210112097998757
+  },
+  {
+    "task_id": 4,
+    "task_name": "T5",
+    "num_relations": 10,
+    "sample_count": 6900,
+    "accuracy": 0.5889855072463768,
+    "macro_f1": 0.687593835186936
+  },
+  {
+    "task_id": 5,
+    "task_name": "T6",
+    "num_relations": 10,
+    "sample_count": 6900,
+    "accuracy": 0.634927536231884,
+    "macro_f1": 0.709060864484777
+  },
+  {
+    "task_id": 6,
+    "task_name": "T7",
+    "num_relations": 10,
+    "sample_count": 6900,
+    "accuracy": 0.3855072463768116,
+    "macro_f1": 0.4809948625120916
+  },
+  {
+    "task_id": 7,
+    "task_name": "T8",
+    "num_relations": 10,
+    "sample_count": 6900,
+    "accuracy": 0.41246376811594204,
+    "macro_f1": 0.47321324038282475
+  }
+]
