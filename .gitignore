@@ -12,6 +12,8 @@ __pycache__/
 **/runs/
 **/wandb/
 reports/
+paper-reproductions/ConPL/
+paper-reproductions/CPL/
 
 # Model checkpoints and weights (> 100MB binaries)
 *.pt

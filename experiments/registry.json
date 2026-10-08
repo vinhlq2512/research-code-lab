@@ -5,10 +5,10 @@
       "title": "Baseline B0: Sequential Fine-Tuning",
       "method": "sequential_ft",
       "baseline_role": "lower_bound",
-      "execution_mode": "simulation_mock",
-      "note": "Initial scaffold verification run using MockRelationClassifier. Pending real BERT training.",
-      "status": "completed_simulation",
-      "date": "2026-09-27",
+      "execution_mode": "real_bert_mps",
+      "note": "Official baseline execution using genuine BERT-base-uncased weights on Apple Silicon MPS.",
+      "status": "completed_real",
+      "date": "2026-10-08",
       "git_commit": "4d648ab79b7f3217b65b98de6065fb8496f2c7e1",
       "benchmark": {
         "dataset": "FewRel Track A",
@@ -20,7 +20,7 @@
         "seed": 2021,
         "backbone": "bert-base-uncased",
         "max_seq_length": 128,
-        "device": "auto"
+        "device": "mps"
       },
       "purity_boundary": {
         "memory_budget": 0,
@@ -33,17 +33,17 @@
         "regularizers": []
       },
       "results": {
-        "final_average_accuracy": 0.5976086956521739,
-        "final_macro_f1": 0.7113472661683395,
-        "average_incremental_accuracy": 0.7383518374741201,
-        "average_forgetting": 0.3212215320910974,
-        "backward_transfer": -0.3212215320910974,
+        "final_average_accuracy": 0.08764492753623189,
+        "final_macro_f1": 0.09690758814334605,
+        "average_incremental_accuracy": 0.18984640269151135,
+        "average_forgetting": 0.3362111801242236,
+        "backward_transfer": -0.3362111801242236,
         "most_forgotten_task": {
           "task_id": 0,
           "task_name": "T1",
-          "initial_score": 0.8746376811594203,
-          "final_score": 0.3179710144927536,
-          "forgetting": 0.5566666666666666
+          "initial_score": 0.4144927536231884,
+          "final_score": 0.0,
+          "forgetting": 0.4144927536231884
         }
       },
       "validation": {

@@ -1,0 +1,17 @@
+{
+  "dataset": "fewrel",
+  "matrix": [
+    [
+      0.45159420289855073,
+      null
+    ],
+    [
+      0.09913043478260869,
+      0.37478260869565216
+    ]
+  ],
+  "metric": "accuracy",
+  "num_tasks": 2,
+  "seed": 2021,
+  "task_order_path": "dataset-pipelines/continual-relation-extraction/task-orders/fewrel/order_seed_2021.json"
+}

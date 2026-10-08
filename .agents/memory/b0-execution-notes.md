@@ -265,6 +265,31 @@ Tài liệu này lưu vết chi tiết mọi bước triển khai baseline B0 (S
 - [x] **Thắt chặt Validator (`validate_b0_results.py`):** Check 7 bắt buộc phải có file trọng số nhị phân `model.pt` có dung lượng $> 10\text{ MB}$. Nếu muốn kiểm tra trong môi trường mock scaffold, phải truyền tường minh `--allow-mock`.
 - [x] **Minh bạch hóa Registry & Conclusion:** Cập nhật `experiments/registry.yaml`, `registry.json` và `conclusion.md` nêu rõ trạng thái `simulation_mock` để không gây hiểu nhầm khoa học trong khi chờ lượt train GPU/BERT thật.
 
+---
+
+## Phase 14: Execution of Baseline B0 with Real BERT-base-uncased on Apple Silicon MPS
+
+### 1. Đã làm gì (What)
+- Thực hiện phỏng vấn đối soát qua `/grill-with-docs`, thiết lập từ điển miền `GLOSSARY.md` và ghi nhận quyết định kiến trúc tại `docs/adr/0001-sequential-ft-real-bert-execution.md`.
+- Chạy Smoke Test 2 task ($T_1 \to T_2$) trên `mps` bằng `bert-base-uncased`, xác thực thời gian (~1 phút 15 giây) và xác nhận file trọng số `model.pt` kích thước 418 MB mỗi task.
+- Chạy huấn luyện và đánh giá tuần tự toàn bộ 8 task ($T_1 \to \dots \to T_8$) trên `mps` trong 12 phút với đúng 36 lượt kiểm thử ma trận tam giác dưới (50,400 lượt suy luận).
+- Ghi nhận chỉ số Catastrophic Forgetting thực nghiệm từ weights BERT thật:
+  - **Final Average Accuracy ($AA_8$):** $8.76\%$
+  - **Final Macro-F1:** $9.69\%$
+  - **Average Incremental Accuracy ($AIA$):** $18.98\%$
+  - **Average Catastrophic Forgetting ($AF$):** $33.62\%$
+  - **Backward Transfer ($BWT$):** $-33.62\%$
+  - **Most Forgotten Task:** $T_1$ (suy giảm tuyệt đối $41.45\%$, từ $41.45\%$ về chính xác $0.00\%$).
+- Xác thực cổng DoD tự động qua `experiments/validate_b0_results.py` đạt **ALL 8 CHECKS PASSED** với xác thực trọng số thật (`[REAL PYTORCH WEIGHTS VERIFIED]`).
+- Làm mới toàn bộ trực quan hóa khoa học qua `generate_plots_svg.py` (file SVG, PNG chất lượng cao và `dashboard.html`).
+- Cập nhật chính thức danh mục thực nghiệm `experiments/registry.yaml` và `registry.json` của `E001` sang `execution_mode: real_bert_mps`, `status: completed_real`.
+
+### 2. Tại sao phải làm (Why)
+- **Hoàn thiện mốc chuẩn khoa học thực thụ (Genuine Scientific Lower Bound):** Thay thế toàn bộ số liệu giả định của mock trước đó bằng số liệu thực tế từ mạng nơ-ron sâu BERT-base-uncased. Hiện tượng quên lãng thể hiện chân thực khi $T_1$ và $T_2$ bị xóa sạch trí nhớ về $0.00\%$ và Final AA chỉ còn $8.76\%$.
+- **Lưu trữ trọn vẹn dấu vết thực nghiệm (Full Provenance & Representation Probing):** Lưu đủ 8 checkpoint `model.pt` ($\sim 3.3\text{ GB}$) giúp đội ngũ nghiên cứu sau này có thể truy xuất biểu diễn ẩn qua từng bước học Continual Learning.
+- **Tính tự động và nhất quán (End-to-End DoD Compliance):** Kiểm tra tự động 8 chốt chặn DoD bảo đảm toàn bộ ma trận, đồ thị, registry và kết luận đồng bộ 100% với nhau.
+
+
 
 
 
