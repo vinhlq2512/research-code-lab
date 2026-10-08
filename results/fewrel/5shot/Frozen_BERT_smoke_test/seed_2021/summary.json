@@ -1,0 +1,38 @@
+{
+  "final_average_accuracy": 0.43173913043478257,
+  "average_incremental_accuracy": 0.6302173913043478,
+  "average_forgetting": 0.8273913043478262,
+  "backward_transfer": -0.8273913043478262,
+  "most_forgotten_task": {
+    "task_id": 0,
+    "task_name": "T1",
+    "forgetting": 0.8273913043478262,
+    "initial_score": 0.828695652173913,
+    "final_score": 0.0013043478260869566
+  },
+  "per_task_forgetting": {
+    "task_0": 0.8273913043478262,
+    "task_1": 0.0
+  },
+  "old_vs_new_by_stage": {
+    "stage_1": {
+      "old_acc": 0.0013043478260869566,
+      "new_acc": 0.8621739130434782
+    }
+  },
+  "incremental_accuracy": {
+    "T1": 0.828695652173913,
+    "T2": 0.43173913043478257
+  },
+  "average_accuracy_by_stage": [
+    0.828695652173913,
+    0.43173913043478257
+  ],
+  "evaluated_stage": 1,
+  "final_macro_f1": 0.4314478418658338,
+  "experiment": "E003",
+  "method": "frozen_bert_linear_head",
+  "baseline_role": "representation_probing",
+  "seed": 2021,
+  "shot": 5
+}

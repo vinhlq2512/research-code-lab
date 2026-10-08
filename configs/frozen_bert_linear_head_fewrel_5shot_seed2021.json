@@ -1,0 +1,81 @@
+{
+  "experiment": {
+    "id": "E003",
+    "name": "frozen_bert_linear_head",
+    "registry_id": "E003",
+    "baseline_role": "representation_probing",
+    "description": "Sequential Linear Probing baseline with 100% frozen BERT encoder and trainable Linear Classification Head across 8 tasks"
+  },
+  "dataset": {
+    "name": "fewrel",
+    "track": "A",
+    "num_tasks": 8,
+    "relations_per_task": 10,
+    "total_relations": 80,
+    "train_shot": 5,
+    "val_shot": 5,
+    "max_test_per_relation": null,
+    "raw_data_dir": "dataset-pipelines/continual-relation-extraction/data/raw/fewrel",
+    "processed_mapping_path": "dataset-pipelines/continual-relation-extraction/data/processed/fewrel/relation_mapping.json",
+    "task_order_path": "dataset-pipelines/continual-relation-extraction/task-orders/fewrel/order_seed_2021.json"
+  },
+  "seed": 2021,
+  "model": {
+    "backbone": "bert-base-uncased",
+    "tokenizer": "bert-base-uncased",
+    "max_seq_length": 128,
+    "num_classes": 80,
+    "freeze_encoder": true,
+    "freeze_embeddings": true,
+    "classifier_dropout": 0.1,
+    "classifier_type": "global_head",
+    "preserve_old_classifier_weights": true,
+    "mask_unseen_classes": true
+  },
+  "continual": {
+    "method": "sequential_linear_probing",
+    "memory_size": 0,
+    "replay": false,
+    "prompt": false,
+    "prototype": false,
+    "router": false,
+    "knowledge_distillation": false,
+    "ema_teacher": false,
+    "regularization": false
+  },
+  "training": {
+    "learning_rate": 1.0e-3,
+    "weight_decay": 0.01,
+    "batch_size": 16,
+    "epochs_per_task": 15,
+    "warmup_ratio": 0.1,
+    "optimizer": "AdamW",
+    "lr_scheduler": "linear",
+    "gradient_clip_norm": 1.0,
+    "device": "auto",
+    "feature_caching": true
+  },
+  "evaluation": {
+    "evaluate_seen_tasks": true,
+    "save_per_task_metrics": true,
+    "primary_metric": "accuracy",
+    "additional_metrics": [
+      "macro_f1",
+      "average_incremental_accuracy",
+      "average_forgetting",
+      "backward_transfer"
+    ]
+  },
+  "output": {
+    "results_dir": "results/fewrel/5shot/Frozen_BERT_linear_head/seed_2021",
+    "metrics_file": "metrics.jsonl",
+    "summary_file": "summary.json",
+    "matrix_csv": "performance_matrix.csv",
+    "matrix_json": "performance_matrix.json",
+    "accuracy_plot": "plots/accuracy_over_tasks.png",
+    "forgetting_plot": "plots/forgetting_curve.png",
+    "accuracy_plot_svg": "plots/accuracy_over_tasks.svg",
+    "forgetting_plot_svg": "plots/forgetting_curve.svg",
+    "checkpoint_dir": "checkpoints"
+  }
+}

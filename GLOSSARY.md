@@ -23,3 +23,8 @@ _Avoid_: Memory drift, degradation
 **Joint Training (Upper Bound)**:
 The theoretical and empirical upper-bound benchmark where all tasks, classes, and training samples are trained simultaneously in a single multitask session without sequential task shifts or temporal isolation.
 _Avoid_: Multitask baseline, Full-data baseline
+
+**Sequential Linear Probing (Frozen Backbone)**:
+A continual learning diagnostic baseline where the neural feature extractor (BERT encoder) is 100% frozen, and only a shared linear classification head is trained sequentially across tasks to isolate classifier interference from representation drift.
+_Avoid_: Linear probing without task structure, Static BERT
+
