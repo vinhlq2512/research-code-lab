@@ -423,4 +423,8 @@ def generate_svg_and_html(results_dir: Path | str | None = None) -> dict[str, Pa
 
 
 if __name__ == "__main__":
-    generate_svg_and_html()
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate publication SVG & PNG plots and dashboard HTML")
+    parser.add_argument("--results-dir", type=str, default=None, help="Path to results directory")
+    args = parser.parse_args()
+    generate_svg_and_html(args.results_dir)

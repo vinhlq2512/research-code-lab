@@ -1,0 +1,19 @@
+{
+  "task_id": 7,
+  "relations": [
+    "P25",
+    "P31",
+    "P1303",
+    "P527",
+    "P460",
+    "P106",
+    "P2094",
+    "P26",
+    "P710",
+    "P410"
+  ],
+  "seen_classes": 80,
+  "frozen_encoder": true,
+  "stage": 7,
+  "task_name": "T8"
+}

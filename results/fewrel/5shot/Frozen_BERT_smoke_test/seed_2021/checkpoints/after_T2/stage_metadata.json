@@ -1,0 +1,19 @@
+{
+  "task_id": 1,
+  "relations": [
+    "P931",
+    "P102",
+    "P495",
+    "P306",
+    "P22",
+    "P101",
+    "P178",
+    "P1346",
+    "P58",
+    "P86"
+  ],
+  "seen_classes": 20,
+  "frozen_encoder": true,
+  "stage": 1,
+  "task_name": "T2"
+}
