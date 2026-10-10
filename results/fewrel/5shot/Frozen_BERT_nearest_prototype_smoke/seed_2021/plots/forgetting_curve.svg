@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="100%" height="100%" style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+<rect width="1000" height="600" fill="#ffffff" rx="8"/>
+<text x="432.5" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">B0 Sequential Fine-Tuning: Catastrophic Forgetting Curves</text>
+<text x="432.5" y="58" text-anchor="middle" font-size="13" fill="#64748b">FewRel Track A (8 tasks × 10 relations, 5-shot, seed 2021) — M=0, No Replay</text>
+<rect x="85" y="85" width="695" height="435" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" rx="6"/>
+<line x1="85" y1="520.0" x2="780" y2="520.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="524.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">0%</text>
+<line x1="85" y1="433.0" x2="780" y2="433.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="437.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">20%</text>
+<line x1="85" y1="346.0" x2="780" y2="346.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="350.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">40%</text>
+<line x1="85" y1="259.0" x2="780" y2="259.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="263.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">60%</text>
+<line x1="85" y1="172.0" x2="780" y2="172.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="176.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">80%</text>
+<line x1="85" y1="85.0" x2="780" y2="85.0" stroke="#e2e8f0" stroke-dasharray="4,4" stroke-width="1"/>
+<text x="71" y="89.0" text-anchor="end" font-size="12" fill="#475569" font-weight="600">100%</text>
+<line x1="85.0" y1="85" x2="85.0" y2="520" stroke="#e2e8f0" stroke-width="1"/>
+<text x="85.0" y="544" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="700">Stage 0</text>
+<text x="85.0" y="560" text-anchor="middle" font-size="11" fill="#64748b">(after T1)</text>
+<line x1="780.0" y1="85" x2="780.0" y2="520" stroke="#e2e8f0" stroke-width="1"/>
+<text x="780.0" y="544" text-anchor="middle" font-size="12" fill="#1e293b" font-weight="700">Stage 1</text>
+<text x="780.0" y="560" text-anchor="middle" font-size="11" fill="#64748b">(after T2)</text>
+<text x="432.5" y="582" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">Continual Training Stage</text>
+<text transform="rotate(-90)" x="-302.5" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">Task Accuracy (%)</text>
+<polyline points="85.0,157.0 780.0,187.3" fill="none" stroke="#2563eb" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="85.0" cy="157.0" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="63.0" y="133.0" width="44" height="18" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="85.0" y="146.0" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2563eb">83.4%</text>
+<circle cx="780.0" cy="187.3" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="1.8"/>
+<rect x="732.0" y="178.3" width="44" height="18" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="4" opacity="0.95"/>
+<text x="754.0" y="191.3" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2563eb">76.5%</text>
+<rect x="805" y="95" width="185" height="80" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="8" />
+<text x="821" y="119" font-size="13" font-weight="700" fill="#0f172a">Task Degradation</text>
+<line x1="821" y1="145" x2="845" y2="145" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round"/>
+<circle cx="833" cy="145" r="4" fill="#2563eb" stroke="#fff" stroke-width="1.5"/>
+<text x="853" y="149" font-size="12" font-weight="700" fill="#1e293b">T1: <tspan font-weight="bold" fill="#dc2626">-7.0%</tspan></text>
+</svg>

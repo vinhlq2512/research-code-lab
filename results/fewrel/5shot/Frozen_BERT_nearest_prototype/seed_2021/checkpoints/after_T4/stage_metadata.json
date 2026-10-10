@@ -1,0 +1,21 @@
+{
+  "task_id": 3,
+  "relations": [
+    "P674",
+    "P264",
+    "P991",
+    "P400",
+    "P463",
+    "P3373",
+    "P206",
+    "P403",
+    "P449",
+    "P140"
+  ],
+  "seen_classes": 40,
+  "frozen_encoder": true,
+  "metric": "cosine",
+  "classifier_type": "nearest_prototype",
+  "stage": 3,
+  "task_name": "T4"
+}

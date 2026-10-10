@@ -1,0 +1,3 @@
+{"stage": 0, "stage_name": "after_T1", "test_task": 0, "test_task_name": "T1", "accuracy": 0.8344927536231884, "macro_f1": 0.8291599888901267, "sample_count": 6900}
+{"stage": 1, "stage_name": "after_T2", "test_task": 0, "test_task_name": "T1", "accuracy": 0.7647826086956522, "macro_f1": 0.799188270984692, "sample_count": 6900}
+{"stage": 1, "stage_name": "after_T2", "test_task": 1, "test_task_name": "T2", "accuracy": 0.7805797101449276, "macro_f1": 0.8160054575883455, "sample_count": 6900}
