@@ -1,0 +1,21 @@
+{
+  "task_id": 4,
+  "relations": [
+    "P137",
+    "P413",
+    "P176",
+    "P17",
+    "P3450",
+    "P6",
+    "P241",
+    "P1411",
+    "P407",
+    "P1877"
+  ],
+  "seen_classes": 50,
+  "frozen_encoder": true,
+  "metric": "cosine",
+  "classifier_type": "nearest_prototype",
+  "stage": 4,
+  "task_name": "T5"
+}

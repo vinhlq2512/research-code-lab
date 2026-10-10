@@ -28,3 +28,11 @@ _Avoid_: Multitask baseline, Full-data baseline
 A continual learning diagnostic baseline where the neural feature extractor (BERT encoder) is 100% frozen, and only a shared linear classification head is trained sequentially across tasks to isolate classifier interference from representation drift.
 _Avoid_: Linear probing without task structure, Static BERT
 
+**Nearest Prototype Classifier (Frozen Backbone)**:
+A non-parametric continual learning diagnostic baseline where the neural feature extractor (BERT encoder) is 100% frozen, each relation class is represented by the mean embedding (centroid) of its support samples, and test samples are assigned to the nearest prototype via metric distance (e.g., Cosine similarity) over observed classes.
+_Avoid_: K-NN classifier, Dynamic prototype replay
+
+**Cross-Task Prototype Ambiguity**:
+The phenomenon in non-parametric continual learning where accuracy on past tasks decreases purely because new class prototypes populate previously unoccupied regions of the static embedding space, creating geometric overlap with representations of past classes without any neural weight degradation.
+_Avoid_: Prototype drift, Centroid forgetting
+

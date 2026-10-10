@@ -1,0 +1,21 @@
+{
+  "task_id": 0,
+  "relations": [
+    "P39",
+    "P361",
+    "P150",
+    "P1344",
+    "P159",
+    "P1408",
+    "P551",
+    "P175",
+    "P466",
+    "P641"
+  ],
+  "seen_classes": 10,
+  "frozen_encoder": true,
+  "metric": "cosine",
+  "classifier_type": "nearest_prototype",
+  "stage": 0,
+  "task_name": "T1"
+}
