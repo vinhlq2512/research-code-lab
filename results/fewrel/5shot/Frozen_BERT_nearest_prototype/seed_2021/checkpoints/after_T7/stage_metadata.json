@@ -1,0 +1,21 @@
+{
+  "task_id": 6,
+  "relations": [
+    "P937",
+    "P364",
+    "P355",
+    "P136",
+    "P123",
+    "P156",
+    "P155",
+    "P131",
+    "P84",
+    "P27"
+  ],
+  "seen_classes": 70,
+  "frozen_encoder": true,
+  "metric": "cosine",
+  "classifier_type": "nearest_prototype",
+  "stage": 6,
+  "task_name": "T7"
+}

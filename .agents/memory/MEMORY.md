@@ -11,5 +11,7 @@
 - [project] B0 baseline execution notes with What & Why for each phase → b0-execution-notes.md
 - [project] Upper Bound (Joint Training) execution notes with What & Why → upper-bound-execution-notes.md
 - [project] Frozen BERT + Linear Head execution notes with What & Why → frozen-bert-execution-notes.md
+- [project] Frozen BERT + Nearest Prototype execution notes with What & Why → frozen-bert-nearest-prototype-execution-notes.md
+
 
 
