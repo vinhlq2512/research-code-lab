@@ -12,6 +12,7 @@
 - [project] Upper Bound (Joint Training) execution notes with What & Why → upper-bound-execution-notes.md
 - [project] Frozen BERT + Linear Head execution notes with What & Why → frozen-bert-execution-notes.md
 - [project] Frozen BERT + Nearest Prototype execution notes with What & Why → frozen-bert-nearest-prototype-execution-notes.md
+- [project] ConPL (ACL 2023) reproduction execution notes with What & Why → conpl-execution-notes.md
 
 
 

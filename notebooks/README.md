@@ -10,6 +10,7 @@ Thư mục này chứa các file Jupyter Notebook chuẩn hóa, được thiết
 | :--- | :---: | :--- | :---: |
 | **Baseline B0: Sequential Fine-Tuning** | **Lower Bound** | [`b0_sequential_ft.ipynb`](b0_sequential_ft.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinhlq2512/research-code-lab/blob/main/notebooks/b0_sequential_ft.ipynb) |
 | **Upper Bound: Joint Training (Multitask)** | **Upper Bound** | [`upper_bound_joint.ipynb`](upper_bound_joint.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinhlq2512/research-code-lab/blob/main/notebooks/upper_bound_joint.ipynb) |
+| **ConPL: Consistent Prototype Learning (ACL 2023)** | **SOTA Baseline** | [`conpl_fewrel_5shot.ipynb`](conpl_fewrel_5shot.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinhlq2512/research-code-lab/blob/main/notebooks/conpl_fewrel_5shot.ipynb) |
 
 ---
 
