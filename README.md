@@ -30,6 +30,7 @@ Chạy trực tiếp các benchmark trên Google Colab (GPU T4/V100/A100):
 
 - **Baseline B0 (Sequential Fine-Tuning - Lower Bound):** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinhlq2512/research-code-lab/blob/main/notebooks/b0_sequential_ft.ipynb)
 - **Upper Bound (Joint Training - Multitask):** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinhlq2512/research-code-lab/blob/main/notebooks/upper_bound_joint.ipynb)
+- **ConPL (Consistent Prototype Learning - ACL 2023):** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vinhlq2512/research-code-lab/blob/main/notebooks/conpl_fewrel_5shot.ipynb)
 
 Xem chi tiết hướng dẫn tại [notebooks/README.md](./notebooks/README.md).
 
@@ -37,6 +38,7 @@ Xem chi tiết hướng dẫn tại [notebooks/README.md](./notebooks/README.md)
 ## Subprojects hiện có
 
 - [continual-relation-extraction](./dataset-pipelines/continual-relation-extraction): FewRel/TACRED data pipeline và continual task generation cho các paper continual relation extraction.
+- [ConPL (ACL 2023)](./paper-reproductions/ConPL): Official reproduction cho FewRel 5-shot. Xem báo cáo đối chiếu tại [reports/conpl_fewrel_5shot_reproduction.md](./reports/conpl_fewrel_5shot_reproduction.md).
 
 ## Quy ước làm việc
 
