@@ -1,6 +1,46 @@
 import os
 from pathlib import Path
+import inspect
 import numpy as np
+import huggingface_hub
+
+# Make the NumPy shim safe when this module is reloaded in an interactive process.
+if not hasattr(np, "_conpl_original_asarray"):
+    np._conpl_original_asarray = np.asarray
+_orig_asarray = np._conpl_original_asarray
+
+def _safe_asarray(a, *args, **kwargs):
+    try:
+        return _orig_asarray(a, *args, **kwargs)
+    except ValueError:
+        return _orig_asarray(a, dtype=object, *args, **kwargs)
+
+np.asarray = _safe_asarray
+
+# Legacy bundled Transformers imports HfFolder and passes use_auth_token.
+if not hasattr(huggingface_hub, "HfFolder"):
+    class HfFolder:
+        @staticmethod
+        def get_token():
+            return getattr(huggingface_hub, "get_token", lambda: None)()
+
+        @staticmethod
+        def save_token(token):
+            pass
+
+    huggingface_hub.HfFolder = HfFolder
+
+_hub_download_signature = inspect.signature(huggingface_hub.hf_hub_download)
+if "token" in _hub_download_signature.parameters and "use_auth_token" not in _hub_download_signature.parameters:
+    _original_hf_hub_download = huggingface_hub.hf_hub_download
+
+    def _hf_hub_download_compat(*args, **kwargs):
+        if "use_auth_token" in kwargs:
+            kwargs["token"] = kwargs.pop("use_auth_token")
+        return _original_hf_hub_download(*args, **kwargs)
+
+    huggingface_hub.hf_hub_download = _hf_hub_download_compat
+
 import torch
 import torch.nn as nn
 import torch.optim as optim

@@ -27,6 +27,18 @@ from typing import Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
 import huggingface_hub
+
+# Compatibility shim for modern huggingface_hub (>= 1.0) where HfFolder was removed
+if not hasattr(huggingface_hub, "HfFolder"):
+    class HfFolder:
+        @staticmethod
+        def get_token():
+            return getattr(huggingface_hub, "get_token", lambda: None)()
+        @staticmethod
+        def save_token(token):
+            pass
+    huggingface_hub.HfFolder = HfFolder
+
 import requests
 from huggingface_hub import (
     CommitOperationAdd,
@@ -42,6 +54,14 @@ from huggingface_hub.file_download import REGEX_COMMIT_HASH
 from huggingface_hub.utils import EntryNotFoundError, RepositoryNotFoundError, RevisionNotFoundError
 from requests.exceptions import HTTPError
 from transformers.utils.logging import tqdm
+
+import inspect
+if "use_auth_token" not in inspect.signature(hf_hub_download).parameters:
+    _orig_hf_hub_download = hf_hub_download
+    def hf_hub_download(*args, **kwargs):
+        if "use_auth_token" in kwargs:
+            kwargs["token"] = kwargs.pop("use_auth_token")
+        return _orig_hf_hub_download(*args, **kwargs)
 
 from . import __version__, logging
 from .generic import working_or_temp_dir
@@ -265,10 +285,14 @@ def _patch_hf_hub_tqdm():
     A context manager to make huggingface hub use the tqdm version of Transformers (which is controlled by some utils)
     in logging.
     """
-    old_tqdm = huggingface_hub.file_download.tqdm
-    huggingface_hub.file_download.tqdm = tqdm
-    yield
-    huggingface_hub.file_download.tqdm = old_tqdm
+    old_tqdm = getattr(huggingface_hub.file_download, "tqdm", None)
+    if old_tqdm is not None:
+        huggingface_hub.file_download.tqdm = tqdm
+    try:
+        yield
+    finally:
+        if old_tqdm is not None:
+            huggingface_hub.file_download.tqdm = old_tqdm
 
 
 def cached_file(
