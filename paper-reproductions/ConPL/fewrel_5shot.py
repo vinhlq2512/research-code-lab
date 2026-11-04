@@ -657,6 +657,17 @@ if __name__ == '__main__':
                     torch.save({'task': steps + 1, 'seed': task_result['seed'],
                                 'model_state_dict': modelforbase.state_dict()}, checkpoint_tmp)
                     os.replace(checkpoint_tmp, run_dir / 'checkpoint_latest.pt')
+                    # Keep an immutable model snapshot for every completed task.
+                    # The metrics JSONL above is the lightweight accuracy history;
+                    # these snapshots preserve the model state at each boundary.
+                    task_checkpoint = run_dir / f'checkpoint_task_{steps + 1}.pt'
+                    task_checkpoint_tmp = task_checkpoint.with_suffix('.pt.tmp')
+                    torch.save({'task': steps + 1, 'seed': task_result['seed'],
+                                'accuracy_whole': float(thisstepres),
+                                'accuracy_average': float(results_average),
+                                'model_state_dict': modelforbase.state_dict()},
+                               task_checkpoint_tmp)
+                    os.replace(task_checkpoint_tmp, task_checkpoint)
 
                 if steps + 1 == task_limit:
                     break
