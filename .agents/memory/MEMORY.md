@@ -10,9 +10,6 @@
 - [project] Component metadata uses SemVer while toolkit releases use CalVer → tech-decisions.md
 - [project] B0 baseline execution notes with What & Why for each phase → b0-execution-notes.md
 - [project] Upper Bound (Joint Training) execution notes with What & Why → upper-bound-execution-notes.md
-- [project] Frozen BERT + Linear Head execution notes with What & Why → frozen-bert-execution-notes.md
-- [project] Frozen BERT + Nearest Prototype execution notes with What & Why → frozen-bert-nearest-prototype-execution-notes.md
-- [project] ConPL (ACL 2023) reproduction execution notes with What & Why → conpl-execution-notes.md
-
+- [project] Orchestra AI Research Skills setup execution notes with What & Why → orchestra-workflow-setup-notes.md
 
 

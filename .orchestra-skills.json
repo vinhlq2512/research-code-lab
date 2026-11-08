@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "installedAt": "2026-11-07T23:57:15.292Z",
+  "skills": [
+    {
+      "category": "0-autoresearch-skill",
+      "skill": "0-autoresearch-skill",
+      "standalone": true
+    },
+    {
+      "category": "03-fine-tuning",
+      "skill": "peft",
+      "standalone": false
+    },
+    {
+      "category": "10-optimization",
+      "skill": "bitsandbytes",
+      "standalone": false
+    },
+    {
+      "category": "10-optimization",
+      "skill": "ml-training-recipes",
+      "standalone": false
+    },
+    {
+      "category": "08-distributed-training",
+      "skill": "accelerate",
+      "standalone": false
+    },
+    {
+      "category": "11-evaluation",
+      "skill": "lm-evaluation-harness",
+      "standalone": false
+    },
+    {
+      "category": "13-mlops",
+      "skill": "weights-and-biases",
+      "standalone": false
+    },
+    {
+      "category": "13-mlops",
+      "skill": "tensorboard",
+      "standalone": false
+    },
+    {
+      "category": "19-emerging-techniques",
+      "skill": "knowledge-distillation",
+      "standalone": false
+    },
+    {
+      "category": "22-agent-native-research-artifact",
+      "skill": "rigor-reviewer",
+      "standalone": false
+    }
+  ],
+  "agents": [
+    "agents"
+  ]
+}
