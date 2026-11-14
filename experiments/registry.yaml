@@ -245,3 +245,43 @@ experiments:
       plot_forgetting_svg: "results/fewrel/5shot/Frozen_BERT_nearest_prototype/seed_2021/plots/forgetting_curve.svg"
       dashboard_html: "results/fewrel/5shot/Frozen_BERT_nearest_prototype/seed_2021/dashboard.html"
 
+  - id: "E005"
+    title: "Baseline B5: WAVE-CRE (Adaptive Prompting)"
+    method: "wave_cre"
+    baseline_role: "closest_task_aware_comparator"
+    execution_mode: "google_colab_gpu"
+    note: "Closest task-aware prompt comparator using prompt pools, task predictor, and SWAG latent Gaussian replay. Official smoke run pending execution on Google Colab GPU."
+    status: "planned"
+    date: "2026-11-14"
+
+    benchmark:
+      dataset: "FewRel Track B (Authors' setting)"
+      num_tasks: 10
+      relations_per_task: 8
+      total_relations: 80
+      train_shot: 420
+      val_shot: 140
+      seed: 2021
+      backbone: "bert-base-uncased"
+      max_seq_length: 256
+      device: "cuda"
+
+    purity_boundary:
+      backbone_frozen: false
+      memory_budget: 0
+      replay_buffer: false
+      latent_replay: true
+      prototypes_enabled: false
+      tree_hierarchy_enabled: false
+      prompt_tuning_enabled: true
+      routing_network_enabled: true
+      knowledge_distillation_enabled: false
+      regularizers: ["swag", "pull_constraint"]
+
+    artifacts:
+      config_path: "configs/b5_wave_cre_fewrel_author_seed2021.yaml"
+      notebook_path: "notebooks/wave_cre_smoke_seed2021.ipynb"
+      audit_doc_path: "docs/reproductions/wave-b5-audit-2026-11-14.md"
+      runs_dir: "runs/wave_cre/fewrel_author_config/seed_2021"
+
+
