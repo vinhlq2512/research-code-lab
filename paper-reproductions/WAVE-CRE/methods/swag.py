@@ -5,7 +5,20 @@ import gpytorch
 import numpy as np
 import torch
 from gpytorch.distributions import MultivariateNormal
-from gpytorch.lazy import AddedDiagLazyTensor, DiagLazyTensor, RootLazyTensor
+
+# Backward/Forward compatibility for GPyTorch >= 1.8 where LazyTensors moved to linear_operator
+try:
+    from gpytorch.lazy import AddedDiagLazyTensor, DiagLazyTensor, RootLazyTensor
+except (ImportError, AttributeError):
+    try:
+        from linear_operator.operators import (
+            AddedDiagLinearOperator as AddedDiagLazyTensor,
+            DiagLinearOperator as DiagLazyTensor,
+            RootLinearOperator as RootLazyTensor,
+        )
+    except (ImportError, AttributeError):
+        from linear_operator.operators import AddedDiagLazyTensor, DiagLazyTensor, RootLazyTensor
+
 from torch.distributions.normal import Normal
 
 from .utils import flatten, unflatten_like
@@ -218,8 +231,16 @@ class SWAG(torch.nn.Module):
         covar_lt = AddedDiagLazyTensor(var_lt, cov_mat_lt)
         qdist = MultivariateNormal(mean, covar_lt)
 
-        with gpytorch.settings.num_trace_samples(1) and gpytorch.settings.max_cg_iterations(25):
-            return qdist.log_prob(vec)
+        try:
+            with gpytorch.settings.num_trace_samples(1), gpytorch.settings.max_cg_iterations(25):
+                return qdist.log_prob(vec)
+        except (AttributeError, TypeError):
+            try:
+                import linear_operator.settings as lo_settings
+                with lo_settings.num_trace_samples(1), lo_settings.max_cg_iterations(25):
+                    return qdist.log_prob(vec)
+            except (ImportError, AttributeError, TypeError):
+                return qdist.log_prob(vec)
 
     def block_logdet(self, var, cov_mat_root):
         var = flatten(var)
@@ -228,7 +249,12 @@ class SWAG(torch.nn.Module):
         var_lt = DiagLazyTensor(var + 1e-6)
         covar_lt = AddedDiagLazyTensor(var_lt, cov_mat_lt)
 
-        return covar_lt.log_det()
+        if hasattr(covar_lt, "log_det"):
+            return covar_lt.log_det()
+        elif hasattr(covar_lt, "logdet"):
+            return covar_lt.logdet()
+        else:
+            return covar_lt.to_dense().logdet()
 
     def block_logll(self, param_list, mean_list, var_list, cov_mat_root_list):
         full_logprob = 0
