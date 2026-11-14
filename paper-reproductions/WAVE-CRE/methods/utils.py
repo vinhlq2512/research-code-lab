@@ -8,7 +8,7 @@ from datetime import datetime
 import numpy as np
 import torch
 import torch.nn.functional as F
-import tqdm
+from tqdm import tqdm
 
 
 def setup_seed(seed):
@@ -79,7 +79,7 @@ def train_epoch(
         loader = itertools.islice(loader, num_batches)
 
     if verbose:
-        loader = tqdm.tqdm(loader, total=num_batches)
+        loader = tqdm(loader, total=num_batches)
 
     for i, (input, target) in enumerate(loader):
         if cuda:
@@ -126,7 +126,7 @@ def eval(loader, model, criterion, cuda=True, regression=False, verbose=False):
 
     with torch.no_grad():
         if verbose:
-            loader = tqdm.tqdm(loader)
+            loader = tqdm(loader)
         for i, (input, target) in enumerate(loader):
             if cuda:
                 input = input.cuda(non_blocking=True)
@@ -153,7 +153,7 @@ def predict(loader, model, verbose=False):
     model.eval()
 
     if verbose:
-        loader = tqdm.tqdm(loader)
+        loader = tqdm(loader)
 
     offset = 0
     with torch.no_grad():
@@ -225,7 +225,7 @@ def bn_update(loader, model, verbose=False, subset=None, **kwargs):
             num_batches = int(num_batches * subset)
             loader = itertools.islice(loader, num_batches)
         if verbose:
-            loader = tqdm.tqdm(loader, total=num_batches)
+            loader = tqdm(loader, total=num_batches)
         for input, _ in loader:
             input = input.cuda(non_blocking=True)
             input_var = torch.autograd.Variable(input)

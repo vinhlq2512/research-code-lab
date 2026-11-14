@@ -10,7 +10,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from sklearn.mixture import GaussianMixture
-from tqdm import tqdm, trange
 
 from dataloaders.data_loader import get_data_loader
 from dataloaders.sampler import data_sampler
@@ -20,6 +19,7 @@ from .model import *
 from .prompt import *
 from .swag import SWAG
 from .utils import *
+from tqdm import tqdm, trange
 
 
 class Manager(object):
