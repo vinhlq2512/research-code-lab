@@ -1,5 +1,8 @@
+import glob
+import os
 import pickle
 import random
+import re
 
 import numpy as np
 import torch
@@ -358,7 +361,59 @@ class Manager(object):
         all_tasks = []
         seen_data = {}
 
+        # Checkpoint resume logic
+        start_task = 0
+        if getattr(args, "resume", False):
+            ckpt_path = getattr(args, "resume_path", None)
+            if not ckpt_path or not os.path.isfile(ckpt_path):
+                latest_path = os.path.join(args.checkpoint_dir, f"{args.dataname}_{args.seed}_latest.pt")
+                if os.path.isfile(latest_path):
+                    ckpt_path = latest_path
+                else:
+                    candidates = glob.glob(os.path.join(args.checkpoint_dir, f"{args.dataname}_{args.seed}_task_*.pt"))
+                    if candidates:
+                        def extract_step(p):
+                            m = re.search(r'task_(\d+)\.pt$', p)
+                            return int(m.group(1)) if m else -1
+                        candidates.sort(key=extract_step)
+                        ckpt_path = candidates[-1]
+
+            if ckpt_path and os.path.isfile(ckpt_path):
+                print(f"[Checkpoint] Loading checkpoint from: {ckpt_path}")
+                checkpoint = torch.load(ckpt_path, map_location=args.device)
+                resumed_step = checkpoint["task_id"]
+                start_task = resumed_step + 1
+
+                # Restore encoder
+                encoder.load_state_dict(checkpoint["encoder_state"])
+
+                # Restore prompt pools
+                self.prompt_pools = []
+                for state in checkpoint["prompt_pools_state"]:
+                    pool = Prompt(args).to(args.device)
+                    pool.load_state_dict(state)
+                    self.prompt_pools.append(pool)
+
+                # Restore data structures
+                self.memorized_samples = checkpoint["memorized_samples"]
+                self.replayed_key = checkpoint["replayed_key"]
+                self.replayed_data = checkpoint["replayed_data"]
+                self.id2taskid = checkpoint["id2taskid"]
+                test_cur = checkpoint["test_cur"]
+                test_total = checkpoint["test_total"]
+                all_tasks = checkpoint["all_tasks"]
+                all_train_tasks = checkpoint["all_train_tasks"]
+                seen_data = checkpoint["seen_data"]
+
+                print(f"[Checkpoint] ✓ Successfully restored through Task {resumed_step + 1}. Resuming at Task {start_task + 1}...")
+            else:
+                print(f"[Checkpoint] ⚠️ Resume requested but no valid checkpoint found in '{args.checkpoint_dir}'. Starting from Task 1.")
+
         for steps, (training_data, valid_data, test_data, current_relations, historic_test_data, seen_relations) in enumerate(sampler):
+            if steps < start_task:
+                print(f"[Checkpoint] Skipping already completed Task {steps + 1}...")
+                continue
+
             print("=" * 100)
             print(f"task={steps+1}")
             print(f"current relations={current_relations}")
@@ -470,5 +525,28 @@ class Manager(object):
 
                 with open(f"./results/{args.seed}_coda_prompt/task_{steps}.pickle", "wb") as file:
                     pickle.dump(results, file)
+
+                # Save model checkpoint for Colab resume
+                if getattr(args, "save_checkpoint", True):
+                    os.makedirs(args.checkpoint_dir, exist_ok=True)
+                    ckpt_path = os.path.join(args.checkpoint_dir, f"{args.dataname}_{args.seed}_task_{steps}.pt")
+                    latest_path = os.path.join(args.checkpoint_dir, f"{args.dataname}_{args.seed}_latest.pt")
+                    ckpt_data = {
+                        "task_id": steps,
+                        "encoder_state": encoder.state_dict(),
+                        "prompt_pools_state": [p.state_dict() for p in self.prompt_pools],
+                        "memorized_samples": self.memorized_samples,
+                        "replayed_key": self.replayed_key,
+                        "replayed_data": self.replayed_data,
+                        "id2taskid": self.id2taskid,
+                        "test_cur": test_cur,
+                        "test_total": test_total,
+                        "all_tasks": all_tasks,
+                        "all_train_tasks": all_train_tasks,
+                        "seen_data": seen_data,
+                    }
+                    torch.save(ckpt_data, ckpt_path)
+                    torch.save(ckpt_data, latest_path)
+                    print(f"[Checkpoint] ✓ Successfully saved Task {steps + 1} checkpoint to: {ckpt_path}")
 
         del self.memorized_samples, self.prompt_pools, all_train_tasks, all_tasks, seen_data, results, encoder, self.id2taskid, sampler, self.replayed_data, self.replayed_key, test_cur, test_total

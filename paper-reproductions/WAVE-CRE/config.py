@@ -72,4 +72,10 @@ class Param:
         parser.add_argument("--prompt_key_init", default="uniform", type=str)
         parser.add_argument("--prompt-type", default="coda-prompt", type=str)
 
+        # checkpoint and resume
+        parser.add_argument("--save_checkpoint", default=True, type=lambda x: (str(x).lower() in ['true', '1', 'yes']))
+        parser.add_argument("--checkpoint_dir", default="checkpoints", type=str)
+        parser.add_argument("--resume", action="store_true", default=False)
+        parser.add_argument("--resume_path", default=None, type=str)
+
         return parser
