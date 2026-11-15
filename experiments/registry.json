@@ -292,6 +292,100 @@
         "audit_doc_path": "docs/reproductions/wave-b5-audit-2026-11-14.md",
         "runs_dir": "runs/wave_cre/fewrel_author_config/seed_2021"
       }
+    },
+    {
+      "id": "E007",
+      "title": "Proposed Method Foundation P0: Frozen BERT + Shared Soft Prompt (Lower Bound)",
+      "method": "p0_shared_prompt",
+      "baseline_role": "lower_bound_prompt",
+      "execution_mode": "real_bert_mps",
+      "note": "Proposed method lower-bound baseline: 100% frozen BERT with a single shared soft prompt across all tasks without routing (rehearsal-free M=0).",
+      "status": "completed_real",
+      "date": "2026-11-15",
+      "benchmark": {
+        "dataset": "FewRel Track A",
+        "num_tasks": 8,
+        "relations_per_task": 10,
+        "total_relations": 80,
+        "train_shot": 5,
+        "test_shot": 100,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "mps"
+      },
+      "purity_boundary": {
+        "backbone_frozen": true,
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "latent_replay": false,
+        "prototypes_enabled": true,
+        "tree_hierarchy_enabled": false,
+        "prompt_tuning_enabled": true,
+        "routing_network_enabled": false,
+        "knowledge_distillation_enabled": false,
+        "regularizers": []
+      },
+      "results": {
+        "final_average_accuracy": 0.098375,
+        "average_incremental_accuracy": 0.29444657738095237,
+        "average_forgetting": 0.8654285714285714,
+        "backward_transfer": -0.8654285714285714,
+        "prototype_accuracy_whole": 0.52825,
+        "til_accuracy_whole": 0.82725
+      },
+      "artifacts": {
+        "config_path": "configs/p0_shared_prompt_fewrel_5shot_seed2021.yaml",
+        "results_dir": "runs/p0_shared_prompt/fewrel_5shot/seed_2021",
+        "metrics_file": "runs/p0_shared_prompt/fewrel_5shot/seed_2021/metrics.json"
+      }
+    },
+    {
+      "id": "E008",
+      "title": "Proposed Method Foundation P1: Frozen BERT + Oracle-Task Soft Prompt Pool (Upper Bound)",
+      "method": "p1_oracle_prompt",
+      "baseline_role": "upper_bound_prompt",
+      "execution_mode": "real_bert_mps",
+      "note": "Proposed method upper-bound baseline: 100% frozen BERT with task-dedicated prompt pool evaluated via Oracle Task ID routing (rehearsal-free M=0).",
+      "status": "completed_real",
+      "date": "2026-11-15",
+      "benchmark": {
+        "dataset": "FewRel Track A",
+        "num_tasks": 8,
+        "relations_per_task": 10,
+        "total_relations": 80,
+        "train_shot": 5,
+        "test_shot": 100,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "mps"
+      },
+      "purity_boundary": {
+        "backbone_frozen": true,
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "latent_replay": false,
+        "prototypes_enabled": true,
+        "tree_hierarchy_enabled": false,
+        "prompt_tuning_enabled": true,
+        "routing_network_enabled": true,
+        "knowledge_distillation_enabled": false,
+        "regularizers": []
+      },
+      "results": {
+        "final_average_accuracy": 0.098375,
+        "average_incremental_accuracy": 0.29916086309523804,
+        "average_forgetting": 0.8571428571428571,
+        "backward_transfer": -0.8571428571428571,
+        "prototype_accuracy_whole": 0.701375,
+        "til_accuracy_whole": 0.82750
+      },
+      "artifacts": {
+        "config_path": "configs/p1_oracle_prompt_fewrel_5shot_seed2021.yaml",
+        "results_dir": "runs/p1_oracle_prompt/fewrel_5shot/seed_2021",
+        "metrics_file": "runs/p1_oracle_prompt/fewrel_5shot/seed_2021/metrics.json"
+      }
     }
   ]
 }
