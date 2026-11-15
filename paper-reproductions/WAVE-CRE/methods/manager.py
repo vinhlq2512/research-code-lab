@@ -309,9 +309,11 @@ class Manager(object):
                 total_hits[0] += (pred == targets).float().sum().data.cpu().numpy().item()
 
                 # pool_ids
-                pool_ids = [self.id2taskid[int(x)] for x in pred]
+                max_pool_idx = max(len(self.prompt_pools) - 1, 0)
+                pool_ids = [min(self.id2taskid.get(int(x), 0), max_pool_idx) for x in pred]
                 for i, pool_id in enumerate(pool_ids):
-                    total_hits[1] += pool_id == self.id2taskid[int(labels[i])]
+                    gold_pool_id = min(self.id2taskid.get(int(labels[i]), 0), max_pool_idx)
+                    total_hits[1] += (pool_id == gold_pool_id)
 
                 # get pools
                 prompt_pools = [self.prompt_pools[x] for x in pool_ids]
@@ -328,10 +330,10 @@ class Manager(object):
                 total_hits[2] += (pred == targets).float().sum().data.cpu().numpy().item()
 
                 # pool_ids
-                pool_ids = [self.id2taskid[int(x)] for x in labels]
+                oracle_pool_ids = [min(self.id2taskid.get(int(x), 0), max_pool_idx) for x in labels]
 
                 # get pools
-                prompt_pools = [self.prompt_pools[x] for x in pool_ids]
+                prompt_pools = [self.prompt_pools[x] for x in oracle_pool_ids]
 
                 # prompted encoder forward
                 prompted_encoder_out = encoder(tokens, None, encoder_out["x_encoded"], prompt_pools)
@@ -350,7 +352,7 @@ class Manager(object):
                 sampled -= len(labels)
                 continue
 
-        return total_hits / sampled
+        return total_hits / max(sampled, 1)
 
     def train(self, args):
         # initialize test results list
@@ -447,6 +449,11 @@ class Manager(object):
                         dst = os.path.join(local_results, os.path.basename(pf))
                         if not os.path.exists(dst):
                             shutil.copy2(pf, dst)
+
+                del checkpoint
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
 
                 print(f"[Checkpoint] ✓ Successfully restored through Task {resumed_step + 1}. Resuming at Task {start_task + 1}...")
             else:

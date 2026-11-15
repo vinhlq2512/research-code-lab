@@ -74,25 +74,23 @@ class BertRelationEncoder(nn.Module):
 
         out = self.encoder(input_ids, prompt_pool, x_key, prompt_pools)
         output = []
-        for i in range(e11.shape[0]):
+        device = input_ids.device
+        for i in range(min(e11.shape[0], e21.shape[0])):
             if prompt_pool is not None:
-                # if self.config.prompt_type == "coda_prompt":
                 additional_length = prompt_pool.length
-                # else:
-                # additional_length = prompt_pool.total_prompt_length
             elif prompt_pools is not None:
-                # if self.config.prompt_type == "coda_prompt":
                 additional_length = prompt_pools[0].length
-                # else:
-                # additional_length = prompt_pools[0].total_prompt_length
             else:
                 additional_length = 0
 
-            device = input_ids.device
-            instance_output = torch.index_select(out["attention_out"], 0, torch.tensor(i, device=device))
+            batch_idx = e11[i][0]
+            instance_output = torch.index_select(out["attention_out"], 0, batch_idx.unsqueeze(0))
             instance_output = torch.index_select(instance_output, 1, torch.tensor([e11[i][1], e21[i][1]], device=device) + additional_length)
             output.append(instance_output)
-        output = torch.cat(output, dim=0)
-        output = output.view(output.shape[0], -1)
+        if output:
+            output = torch.cat(output, dim=0)
+            output = output.view(output.shape[0], -1)
+        else:
+            output = torch.zeros((0, self.config.encoder_output_size * 2), device=device)
         out["x_encoded"] = output
         return out
