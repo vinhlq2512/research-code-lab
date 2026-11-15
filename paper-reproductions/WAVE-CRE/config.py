@@ -18,6 +18,7 @@ class Param:
 
         # training parameters
         parser.add_argument("--batch_size", default=16, type=int)
+        parser.add_argument("--test_batch_size", default=16, type=int)
         parser.add_argument("--num_tasks", default=10)
         parser.add_argument("--rel_per_task", default=8)
         parser.add_argument("--pattern", default="entity_marker")

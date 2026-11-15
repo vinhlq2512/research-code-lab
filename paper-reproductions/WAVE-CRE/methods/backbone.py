@@ -41,9 +41,10 @@ class BaseBertEncoder(BertPreTrainedModel):
             encoder_output = self.encoder(out["prompted_embedding"])
         elif prompt_pools is not None:
             outs = []
+            device = embeddings_output.device
             for _, prompt_pool in enumerate(prompt_pools):
-                embedding_output = torch.index_select(embeddings_output, 0, torch.tensor([_]).cuda())
-                single_x_key = torch.index_select(x_key, 0, torch.tensor([_]).cuda())
+                embedding_output = torch.index_select(embeddings_output, 0, torch.tensor([_], device=device))
+                single_x_key = torch.index_select(x_key, 0, torch.tensor([_], device=device))
                 outs.append(prompt_pool(embedding_output, single_x_key))
             out["prompted_embedding"] = torch.cat([_["prompted_embedding"] for _ in outs])
             encoder_output = self.encoder(out["prompted_embedding"])
@@ -87,8 +88,9 @@ class BertRelationEncoder(nn.Module):
             else:
                 additional_length = 0
 
-            instance_output = torch.index_select(out["attention_out"], 0, torch.tensor(i).cuda())
-            instance_output = torch.index_select(instance_output, 1, torch.tensor([e11[i][1], e21[i][1]]).cuda() + additional_length)
+            device = input_ids.device
+            instance_output = torch.index_select(out["attention_out"], 0, torch.tensor(i, device=device))
+            instance_output = torch.index_select(instance_output, 1, torch.tensor([e11[i][1], e21[i][1]], device=device) + additional_length)
             output.append(instance_output)
         output = torch.cat(output, dim=0)
         output = output.view(output.shape[0], -1)

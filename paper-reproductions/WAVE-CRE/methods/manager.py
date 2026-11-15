@@ -1,8 +1,10 @@
+import gc
 import glob
 import os
 import pickle
 import random
 import re
+import shutil
 
 import numpy as np
 import torch
@@ -25,6 +27,25 @@ from tqdm import tqdm, trange
 class Manager(object):
     def __init__(self, args):
         super().__init__()
+
+    def _reconstruct_replay_buffers(self, args, seen_relations):
+        print(f"[Checkpoint] Reconstructing replay buffers from GMM distributions for {len(seen_relations)} relations...")
+        self.replayed_key = [[] for _ in range(args.replay_epochs)]
+        self.replayed_data = [[] for _ in range(args.replay_epochs)]
+        for relation in seen_relations:
+            rel_id = self.rel2id[relation]
+            if rel_id not in self.memorized_samples:
+                continue
+            replay_data = self.memorized_samples[rel_id]["replay"].sample(args.replay_epochs * args.replay_s_e_e)[0].astype("float32")
+            for e_id in range(args.replay_epochs):
+                for x_encoded in replay_data[e_id * args.replay_s_e_e : (e_id + 1) * args.replay_s_e_e]:
+                    self.replayed_data[e_id].append({"relation": rel_id, "tokens": x_encoded})
+
+            replay_key = self.memorized_samples[rel_id]["replay_key"].sample(args.replay_epochs * args.replay_s_e_e)[0].astype("float32")
+            for e_id in range(args.replay_epochs):
+                for x_encoded in replay_key[e_id * args.replay_s_e_e : (e_id + 1) * args.replay_s_e_e]:
+                    self.replayed_key[e_id].append({"relation": rel_id, "tokens": x_encoded})
+        print(f"[Checkpoint] ✓ Reconstructed {len(self.replayed_data[0]) if self.replayed_data else 0} samples per replay epoch.")
 
     def train_classifier(self, args, classifier, swag_classifier, replayed_epochs, name):
         classifier.train()
@@ -258,8 +279,9 @@ class Manager(object):
         encoder.eval()
         classifier.eval()
 
-        # data loader for test set
-        data_loader = get_data_loader(args, test_data, batch_size=1, shuffle=False)
+        # data loader for test set (batched for high-throughput evaluation)
+        eval_batch_size = getattr(args, "test_batch_size", 16)
+        data_loader = get_data_loader(args, test_data, batch_size=eval_batch_size, shuffle=False)
 
         # tqdm
         td = tqdm(data_loader, desc=name)
@@ -396,14 +418,32 @@ class Manager(object):
 
                 # Restore data structures
                 self.memorized_samples = checkpoint["memorized_samples"]
-                self.replayed_key = checkpoint["replayed_key"]
-                self.replayed_data = checkpoint["replayed_data"]
                 self.id2taskid = checkpoint["id2taskid"]
                 test_cur = checkpoint["test_cur"]
                 test_total = checkpoint["test_total"]
                 all_tasks = checkpoint["all_tasks"]
                 all_train_tasks = checkpoint["all_train_tasks"]
                 seen_data = checkpoint["seen_data"]
+
+                if (
+                    "replayed_key" in checkpoint
+                    and checkpoint["replayed_key"] is not None
+                    and len(checkpoint["replayed_key"]) == args.replay_epochs
+                ):
+                    self.replayed_key = checkpoint["replayed_key"]
+                    self.replayed_data = checkpoint["replayed_data"]
+                else:
+                    self._reconstruct_replay_buffers(args, list(seen_data.keys()))
+
+                # Restore previous task pickles if missing locally
+                gdrive_results = os.path.join(args.checkpoint_dir, "results")
+                local_results = f"./results/{args.seed}_coda_prompt"
+                if os.path.exists(gdrive_results):
+                    os.makedirs(local_results, exist_ok=True)
+                    for pf in glob.glob(os.path.join(gdrive_results, "task_*.pickle")):
+                        dst = os.path.join(local_results, os.path.basename(pf))
+                        if not os.path.exists(dst):
+                            shutil.copy2(pf, dst)
 
                 print(f"[Checkpoint] ✓ Successfully restored through Task {resumed_step + 1}. Resuming at Task {start_task + 1}...")
             else:
@@ -520,11 +560,17 @@ class Manager(object):
                     }
                 )
 
-                if not os.path.exists(f"./results/{args.seed}_coda_prompt"):
-                    os.makedirs(f"./results/{args.seed}_coda_prompt")
-
-                with open(f"./results/{args.seed}_coda_prompt/task_{steps}.pickle", "wb") as file:
+                results_dir = f"./results/{args.seed}_coda_prompt"
+                os.makedirs(results_dir, exist_ok=True)
+                with open(os.path.join(results_dir, f"task_{steps}.pickle"), "wb") as file:
                     pickle.dump(results, file)
+
+                # Backup pickle directly to Google Drive checkpoint directory
+                if getattr(args, "save_checkpoint", True) and args.checkpoint_dir:
+                    gdrive_results = os.path.join(args.checkpoint_dir, "results")
+                    os.makedirs(gdrive_results, exist_ok=True)
+                    with open(os.path.join(gdrive_results, f"task_{steps}.pickle"), "wb") as file:
+                        pickle.dump(results, file)
 
                 # Save model checkpoint for Colab resume
                 if getattr(args, "save_checkpoint", True):
@@ -536,8 +582,6 @@ class Manager(object):
                         "encoder_state": encoder.state_dict(),
                         "prompt_pools_state": [p.state_dict() for p in self.prompt_pools],
                         "memorized_samples": self.memorized_samples,
-                        "replayed_key": self.replayed_key,
-                        "replayed_data": self.replayed_data,
                         "id2taskid": self.id2taskid,
                         "test_cur": test_cur,
                         "test_total": test_total,
@@ -547,6 +591,10 @@ class Manager(object):
                     }
                     torch.save(ckpt_data, ckpt_path)
                     torch.save(ckpt_data, latest_path)
-                    print(f"[Checkpoint] ✓ Successfully saved Task {steps + 1} checkpoint to: {ckpt_path}")
+                    del ckpt_data
+                    gc.collect()
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                    print(f"[Checkpoint] ✓ Successfully saved lean Task {steps + 1} checkpoint to: {ckpt_path}")
 
         del self.memorized_samples, self.prompt_pools, all_train_tasks, all_tasks, seen_data, results, encoder, self.id2taskid, sampler, self.replayed_data, self.replayed_key, test_cur, test_total
