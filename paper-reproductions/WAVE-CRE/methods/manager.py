@@ -402,7 +402,10 @@ class Manager(object):
 
             if ckpt_path and os.path.isfile(ckpt_path):
                 print(f"[Checkpoint] Loading checkpoint from: {ckpt_path}")
-                checkpoint = torch.load(ckpt_path, map_location=args.device)
+                try:
+                    checkpoint = torch.load(ckpt_path, map_location=args.device, weights_only=False)
+                except TypeError:
+                    checkpoint = torch.load(ckpt_path, map_location=args.device)
                 resumed_step = checkpoint["task_id"]
                 start_task = resumed_step + 1
 
