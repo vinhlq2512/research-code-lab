@@ -1,0 +1,30 @@
+{
+  "protocol": "v1",
+  "benchmarks": [
+    "FewRel 8x10 5-shot",
+    "TACRED 8x5 5-shot"
+  ],
+  "source": "paper-reproductions/ConPL/data",
+  "sha256": {
+    "fewrel/relation_name.txt": "e2bf1364fdfe927045457c4627eaec64bf7cf8a5d7bdd145491dd3b101a99fd0",
+    "fewrel/rel_index.npy": "bf877a1b803646492899cf49abb456f7490ce38c92bdda46a341d0a6fcc563b8",
+    "fewrel/rel_feature.npy": "edecff6648585f39217bc05657d17085df2dc4f7c2880a5ef1c5c6c8e33dcb1c",
+    "fewrel/CFRLdata_10_100_10_5/rel_cluster_label_0.npy": "5107e26201ce9a46370ac25d10c8dc6c640cc9221c9f7a12ece49751415d40d1",
+    "fewrel/CFRLdata_10_100_10_5/test_0.npy": "a3ff4e7392ab2e27100dfa722ac20dc746533276455e8f1573f84877b545b69d",
+    "fewrel/CFRLdata_10_100_10_5/train_0.npy": "a28e5e567b9e5225fad00f8d8346ee1348eb2c98065de3a0418f266e102962a2",
+    "fewrel/CFRLdata_10_100_10_5/valid_0.txt": "6d6f14ce646b986ba3a600c10826ac7e61a42be8e1885d250fdbf83e35db8727",
+    "fewrel/CFRLdata_10_100_10_5/test_0.txt": "6d6f14ce646b986ba3a600c10826ac7e61a42be8e1885d250fdbf83e35db8727",
+    "fewrel/CFRLdata_10_100_10_5/valid_0.npy": "a3ff4e7392ab2e27100dfa722ac20dc746533276455e8f1573f84877b545b69d",
+    "fewrel/CFRLdata_10_100_10_5/train_0.txt": "af862bd183852ee5dd8be0fe1b85db0b1c520697f7b0f68a6f2e0ef25eca4dfe",
+    "tacred/relation_name.txt": "7116d68e6121bd337d7539d3acf9461b87e704e159e39f5f5544f931bef50b35",
+    "tacred/rel_index.npy": "f226ac5ab6c17dc98b1ee22a5e01afc5a0f74fb0c44b5fe4c417492c83f81d21",
+    "tacred/rel_feature.npy": "148eae735f00430feba0980699ce7a46d319b732e61d9baa5ea4278fdce09750",
+    "tacred/CFRLdata_10_100_10_5/rel_cluster_label_0.npy": "fc3152201bdf2e2cedd375d8ac21cdcab84d62490c927364ce7618110291cfad",
+    "tacred/CFRLdata_10_100_10_5/test_0.npy": "cd9e0388ca87e4bd06541c3bfafab74f2f7c244c13bf8f88d74d6912d2cde6ec",
+    "tacred/CFRLdata_10_100_10_5/train_0.npy": "2dbeb9ff01a2c5032297864863dbf301b4ed806c25e29b521b13eab03c3b2977",
+    "tacred/CFRLdata_10_100_10_5/valid_0.txt": "62c0d86af44e1d1671aee9b0e15b2d9c2e8bd0e38cdaff837935a260956910d5",
+    "tacred/CFRLdata_10_100_10_5/test_0.txt": "62c0d86af44e1d1671aee9b0e15b2d9c2e8bd0e38cdaff837935a260956910d5",
+    "tacred/CFRLdata_10_100_10_5/valid_0.npy": "cd9e0388ca87e4bd06541c3bfafab74f2f7c244c13bf8f88d74d6912d2cde6ec",
+    "tacred/CFRLdata_10_100_10_5/train_0.txt": "222b06449305de51b84b3ed102b2c20ce8f9448dd4c5e32bc88fed7092130fd5"
+  }
+}

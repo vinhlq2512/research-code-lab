@@ -1,0 +1,59 @@
+# ==============================================================================
+# B5 — WAVE-CRE (Adaptive Prompting) Experimental Configuration
+# Protocol: FewRel Track B (Authors' Setting: 10 tasks × 8 relations, 420 train/140 val/140 test)
+# Baseline Type: Closest Task-Aware Prompt Comparator with Latent SWAG Replay
+# Upstream: https://github.com/mrshaw01/AdaptivePromptingCRE (Commit: 5273b70)
+# ==============================================================================
+
+experiment:
+  id: "B5"
+  name: "wave_cre"
+  registry_id: "E005"
+  description: "Adaptive Prompting for Continual Relation Extraction (WAVE-CRE) with SWAG latent Gaussian replay"
+  execution_environment: "google_colab_gpu"
+  status: "planned"
+
+dataset:
+  name: "fewrel"
+  track: "B"  # Data-rich authors' setting for smoke/reproduction
+  num_tasks: 10
+  relations_per_task: 8
+  total_relations: 80
+  num_of_train_per_rel: 420
+  num_of_val_per_rel: 140
+  num_of_test_per_rel: 140
+  data_path: "paper-reproductions/WAVE-CRE/datasets"
+  task_order_strategy: "random_shuffle_by_seed"
+
+seed: 2021
+
+model:
+  backbone: "bert-base-uncased"
+  max_seq_length: 256
+  pattern: "entity_marker"
+  encoder_output_size: 768
+  prompt_length: 8
+  prompt_top_k: 4
+  prompt_pool_size: 20
+  prompt_type: "only_prompt"
+
+continual:
+  method: "wave_cre"
+  memory_size: 0  # 0 raw exemplars
+  latent_replay: true
+  replay_s_e_e: 100
+  replay_epochs: 200
+  gmm_num_components: 1
+  task_predictor: true
+  task_oracle_inference: false
+
+training:
+  batch_size: 16
+  encoder_epochs: 30
+  encoder_lr: 2.0e-5
+  prompt_pool_epochs: 25
+  prompt_pool_lr: 1.0e-4
+  classifier_epochs: 250
+  classifier_lr: 5.0e-5
+  sgd_momentum: 0.1
+  max_grad_norm: 10.0
