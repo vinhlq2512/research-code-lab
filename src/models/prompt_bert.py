@@ -166,10 +166,14 @@ class PromptedBERTRelationClassifier(nn.Module):
         e1_indices: torch.Tensor,
         e2_indices: torch.Tensor,
         task_id: int | torch.Tensor | None = None,
+        custom_prompt: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """Extract concatenated entity representations [h_e1; h_e2] with soft prompt prepended."""
         batch_size = input_ids.size(0)
-        prompt_embeds = self.get_prompt_for_batch(batch_size, task_id=task_id)
+        if custom_prompt is not None:
+            prompt_embeds = custom_prompt
+        else:
+            prompt_embeds = self.get_prompt_for_batch(batch_size, task_id=task_id)
 
         # Get word embeddings from frozen BERT
         word_embeds = self.encoder.embeddings.word_embeddings(input_ids)
@@ -203,9 +207,17 @@ class PromptedBERTRelationClassifier(nn.Module):
         e1_indices: torch.Tensor,
         e2_indices: torch.Tensor,
         task_id: int | torch.Tensor | None = None,
+        custom_prompt: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
         """Compute relation representations and class logits."""
-        h_r = self.extract_features(input_ids, attention_mask, e1_indices, e2_indices, task_id=task_id)
+        h_r = self.extract_features(
+            input_ids,
+            attention_mask,
+            e1_indices,
+            e2_indices,
+            task_id=task_id,
+            custom_prompt=custom_prompt,
+        )
         h_drop = self.dropout(h_r)
         logits = self.classifier(h_drop)
 
@@ -258,6 +270,45 @@ class PromptedBERTRelationClassifier(nn.Module):
             gated_sim[i, c_start:c_end] = sim[i, c_start:c_end]
 
         return gated_sim
+
+    def predict_topk_gated_prototype(
+        self,
+        h_r: torch.Tensor,
+        topk_task_ids: torch.Tensor,
+        relations_per_task: int = 10,
+    ) -> torch.Tensor:
+        """Compute prototype similarity gated to the union of relations of Top-K candidate tasks."""
+        sim = self.predict_prototype(h_r, seen_classes_only=True).clone()
+        batch_size = h_r.size(0)
+        k = topk_task_ids.size(1)
+        gated_sim = torch.full_like(sim, -1e9)
+
+        for i in range(batch_size):
+            for k_idx in range(k):
+                t_id = int(topk_task_ids[i, k_idx].item())
+                c_start = t_id * relations_per_task
+                c_end = min(c_start + relations_per_task, self.seen_classes)
+                gated_sim[i, c_start:c_end] = sim[i, c_start:c_end]
+
+        return gated_sim
+
+    def compute_orthogonality_loss(self, task_id: int) -> torch.Tensor:
+        """Compute cosine orthogonality/diversity loss between P_t and previous prompts {P_0..P_{t-1}}."""
+        if self.prompt_mode not in ("oracle_pool", "routed_pool") or task_id <= 0:
+            return torch.tensor(0.0, device=self.target_device)
+
+        current_p = self.prompt_pool[task_id]  # [1, L, H]
+        current_mean = F.normalize(current_p.mean(dim=1), p=2, dim=-1)  # [1, H]
+
+        prev_prompts = torch.stack(
+            [self.prompt_pool[j].detach().mean(dim=1) for j in range(task_id)], dim=0
+        )  # [task_id, 1, H]
+        prev_means = F.normalize(prev_prompts.squeeze(1), p=2, dim=-1)  # [task_id, H]
+
+        # Cosine similarities: [task_id]
+        sims = torch.mm(current_mean, prev_means.t()).squeeze(0)
+        orth_loss = torch.mean(torch.abs(sims))
+        return orth_loss
 
     def update_prototypes(
         self,

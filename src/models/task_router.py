@@ -234,3 +234,73 @@ class TaskRouter(nn.Module):
             "task_scores": scores,
             "centroid_scores": centroid_scores,
         }
+
+    @torch.no_grad()
+    def compose_soft_prompt(
+        self,
+        query_features: torch.Tensor,
+        prompt_pool: nn.ParameterList | list[torch.Tensor] | torch.Tensor,
+        seen_tasks: int,
+        top_k: int = 2,
+        temperature: float = 0.2,
+    ) -> dict[str, torch.Tensor]:
+        """Compute sample-specific softly weighted prompt composition for a batch of queries.
+
+        Args:
+            query_features: [B, D] unprompted query embeddings from frozen BERT
+            prompt_pool: ParameterList of length num_tasks, each [1, L, H] or tensor [num_tasks, 1, L, H]
+            seen_tasks: number of observed tasks (1..num_tasks)
+            top_k: number of candidate tasks to blend (K >= 1)
+            temperature: temperature parameter tau for sharpening/smoothing softmax weights
+
+        Returns:
+            dict containing:
+                "composed_prompts": [B, L, H] softly weighted prompts
+                "topk_indices": [B, K] task indices chosen for each sample
+                "topk_weights": [B, K] softmax weights assigned to top-K tasks
+                "pred_task_ids": [B] hard top-1 task predictions
+                "task_scores": [B, seen_tasks] raw router scores
+        """
+        self.eval()
+        scores = self.compute_centroid_scores(query_features, seen_tasks=seen_tasks)
+        if self.router_type != "centroid":
+            learned_logits = self.compute_learned_scores(query_features, seen_tasks=seen_tasks)
+            learned_probs = F.softmax(learned_logits, dim=-1)
+            centroid_probs = F.softmax(self.temperature * scores, dim=-1)
+            w = self.residual_anchor_weight
+            scores = (1.0 - w) * learned_probs + w * centroid_probs
+
+        device = query_features.device
+        k = max(1, min(int(top_k), int(seen_tasks)))
+
+        topk_scores, topk_indices = torch.topk(scores, k=k, dim=-1)  # [B, K]
+
+        # Temperature-scaled softmax over top-K candidate scores
+        temp = max(float(temperature), 1e-4)
+        topk_weights = F.softmax(topk_scores / temp, dim=-1)  # [B, K]
+
+        # Stack seen task prompts: [seen_tasks, L, H]
+        if isinstance(prompt_pool, (nn.ParameterList, list)):
+            p_list = [prompt_pool[t].squeeze(0).to(device) for t in range(seen_tasks)]
+            p_stack = torch.stack(p_list, dim=0)  # [seen_tasks, L, H]
+        elif isinstance(prompt_pool, torch.Tensor):
+            p_stack = prompt_pool[:seen_tasks].squeeze(1).to(device)
+        else:
+            raise TypeError(f"Unsupported prompt_pool type: {type(prompt_pool)}")
+
+        # Gather prompts for top-K tasks: [B, K, L, H]
+        topk_prompts = p_stack[topk_indices]
+
+        # Weighted composition: [B, L, H]
+        weights_expanded = topk_weights.unsqueeze(-1).unsqueeze(-1)  # [B, K, 1, 1]
+        composed_prompts = torch.sum(weights_expanded * topk_prompts, dim=1)  # [B, L, H]
+
+        pred_task_ids = topk_indices[:, 0]  # [B] Top-1 prediction
+
+        return {
+            "composed_prompts": composed_prompts,
+            "topk_indices": topk_indices,
+            "topk_weights": topk_weights,
+            "pred_task_ids": pred_task_ids,
+            "task_scores": scores,
+        }
