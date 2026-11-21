@@ -1,0 +1,420 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1020" width="100%" height="100%" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+<defs>
+      <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="100%" stop-color="#f8fafc"/>
+      </linearGradient>
+      <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+        <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.08"/>
+      </filter>
+    </defs>
+<rect width="1280" height="1020" fill="url(#bgGrad)"/>
+<rect x="30" y="20" width="1220" height="80" rx="10" fill="#0f172a" filter="url(#shadow)"/>
+<text x="50" y="53" font-size="19" font-weight="800" fill="#ffffff">ĐỐI SÁNH KHUNG KẸP SANDWICH BASELINES: P0 (SÀN) — P2a/P2b (TASK ROUTER) — P1 (TRẦN ORACLE)</text>
+<text x="50" y="79" font-size="12.5" font-weight="500" fill="#94a3b8">Protocol v1 Track A (FewRel 8×10, strict 5-shot, Rehearsal-Free M=0, Seed 2021) | Thực thi trên Google Colab GPU (CUDA)</text>
+<rect x="965" y="34" width="265" height="52" rx="6" fill="#1e293b"/>
+<text x="1098" y="53" text-anchor="middle" font-size="11" font-weight="600" fill="#38bdf8">P2a CENTROID ROUTER (NO TASK ID)</text>
+<text x="1098" y="74" text-anchor="middle" font-size="14" font-weight="800" fill="#4ade80">Acc: 59.35% | Router: 64.69% | Gap: 37.7%</text>
+<rect x="30" y="120" width="415" height="360" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+<text x="48" y="150" font-size="14" font-weight="700" fill="#0f172a">1. Độ Chính Xác Trung Bình Qua 8 Stage</text>
+<text x="48" y="167" font-size="11" fill="#64748b">P2a vượt P0 (+6.53%) và P2b (+3.31%) khi không có Task ID</text>
+<line x1="78" y1="430.0" x2="421" y2="430.0" stroke="#f1f5f9" stroke-width="1"/>
+<text x="70" y="434.0" text-anchor="end" font-size="10" font-weight="600" fill="#94a3b8">40%</text>
+<line x1="78" y1="368.8" x2="421" y2="368.8" stroke="#f1f5f9" stroke-width="1"/>
+<text x="70" y="372.8" text-anchor="end" font-size="10" font-weight="600" fill="#94a3b8">55%</text>
+<line x1="78" y1="307.5" x2="421" y2="307.5" stroke="#f1f5f9" stroke-width="1"/>
+<text x="70" y="311.5" text-anchor="end" font-size="10" font-weight="600" fill="#94a3b8">70%</text>
+<line x1="78" y1="246.2" x2="421" y2="246.2" stroke="#f1f5f9" stroke-width="1"/>
+<text x="70" y="250.2" text-anchor="end" font-size="10" font-weight="600" fill="#94a3b8">85%</text>
+<line x1="78" y1="185.0" x2="421" y2="185.0" stroke="#f1f5f9" stroke-width="1"/>
+<text x="70" y="189.0" text-anchor="end" font-size="10" font-weight="600" fill="#94a3b8">100%</text>
+<line x1="78.0" y1="185" x2="78.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="78.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S1</text>
+<line x1="127.0" y1="185" x2="127.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="127.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S2</text>
+<line x1="176.0" y1="185" x2="176.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="176.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S3</text>
+<line x1="225.0" y1="185" x2="225.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="225.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S4</text>
+<line x1="274.0" y1="185" x2="274.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="274.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S5</text>
+<line x1="323.0" y1="185" x2="323.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="323.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S6</text>
+<line x1="372.0" y1="185" x2="372.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="372.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S7</text>
+<line x1="421.0" y1="185" x2="421.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="421.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S8</text>
+<polyline points="78.0,237.7 127.0,270.3 176.0,277.3 225.0,288.8 274.0,290.6 323.0,287.2 372.0,295.8 421.0,306.9" fill="none" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="78.0" cy="237.7" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="127.0" cy="270.3" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="176.0" cy="277.3" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="225.0" cy="288.8" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="274.0" cy="290.6" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="323.0" cy="287.2" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="372.0" cy="295.8" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="421.0" cy="306.9" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<polyline points="78.0,239.3 127.0,281.6 176.0,301.1 225.0,318.4 274.0,326.5 323.0,321.9 372.0,335.9 421.0,351.0" fill="none" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="78.0" cy="239.3" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="127.0" cy="281.6" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="176.0" cy="301.1" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="225.0" cy="318.4" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="274.0" cy="326.5" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="323.0" cy="321.9" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="372.0" cy="335.9" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="421.0" cy="351.0" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<polyline points="78.0,239.3 127.0,283.8 176.0,308.6 225.0,327.2 274.0,336.2 323.0,334.7 372.0,349.1 421.0,364.5" fill="none" stroke="#d97706" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="78.0" cy="239.3" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="127.0" cy="283.8" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="176.0" cy="308.6" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="225.0" cy="327.2" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="274.0" cy="336.2" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="323.0" cy="334.7" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="372.0" cy="349.1" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="421.0" cy="364.5" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<polyline points="78.0,231.6 127.0,299.1 176.0,323.7 225.0,345.4 274.0,348.7 323.0,350.4 372.0,365.3 421.0,377.6" fill="none" stroke="#ef4444" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="78.0" cy="231.6" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="127.0" cy="299.1" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="176.0" cy="323.7" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="225.0" cy="345.4" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="274.0" cy="348.7" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="323.0" cy="350.4" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="372.0" cy="365.3" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="421.0" cy="377.6" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<rect x="78" y="456" width="14" height="4" fill="#059669" rx="2"/>
+<text x="98" y="460" font-size="10.5" font-weight="700" fill="#059669">P1 Oracle (70.14%)</text>
+<rect x="253" y="456" width="14" height="4" fill="#2563eb" rx="2"/>
+<text x="273" y="460" font-size="10.5" font-weight="700" fill="#2563eb">P2a Centroid (59.35%)</text>
+<rect x="78" y="472" width="14" height="4" fill="#d97706" rx="2"/>
+<text x="98" y="476" font-size="10.5" font-weight="700" fill="#d97706">P2b Learned (56.04%)</text>
+<rect x="253" y="472" width="14" height="4" fill="#ef4444" rx="2"/>
+<text x="273" y="476" font-size="10.5" font-weight="700" fill="#ef4444">P0 Shared (52.83%)</text>
+<rect x="460" y="120" width="415" height="360" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+<text x="478" y="150" font-size="14" font-weight="700" fill="#0f172a">2. Đường Cong Giữ Lại Tác Vụ 1 (Task 1 Retention)</text>
+<text x="478" y="167" font-size="11" fill="#64748b">P2a giữ được 69.1% ở Stage 8 (cao hơn P0 tới +30.2%)</text>
+<line x1="508" y1="430.0" x2="851" y2="430.0" stroke="#f1f5f9" stroke-width="1"/>
+<text x="500" y="434.0" text-anchor="end" font-size="10" font-weight="600" fill="#94a3b8">30%</text>
+<line x1="508" y1="373.5" x2="851" y2="373.5" stroke="#f1f5f9" stroke-width="1"/>
+<text x="500" y="377.5" text-anchor="end" font-size="10" font-weight="600" fill="#94a3b8">45%</text>
+<line x1="508" y1="316.9" x2="851" y2="316.9" stroke="#f1f5f9" stroke-width="1"/>
+<text x="500" y="320.9" text-anchor="end" font-size="10" font-weight="600" fill="#94a3b8">60%</text>
+<line x1="508" y1="260.4" x2="851" y2="260.4" stroke="#f1f5f9" stroke-width="1"/>
+<text x="500" y="264.4" text-anchor="end" font-size="10" font-weight="600" fill="#94a3b8">75%</text>
+<line x1="508" y1="203.8" x2="851" y2="203.8" stroke="#f1f5f9" stroke-width="1"/>
+<text x="500" y="207.8" text-anchor="end" font-size="10" font-weight="600" fill="#94a3b8">90%</text>
+<line x1="508.0" y1="185" x2="508.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="508.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S1</text>
+<line x1="557.0" y1="185" x2="557.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="557.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S2</text>
+<line x1="606.0" y1="185" x2="606.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="606.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S3</text>
+<line x1="655.0" y1="185" x2="655.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="655.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S4</text>
+<line x1="704.0" y1="185" x2="704.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="704.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S5</text>
+<line x1="753.0" y1="185" x2="753.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="753.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S6</text>
+<line x1="802.0" y1="185" x2="802.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="802.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S7</text>
+<line x1="851.0" y1="185" x2="851.0" y2="430" stroke="#f1f5f9" stroke-width="1"/>
+<text x="851.0" y="448" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">S8</text>
+<polyline points="508.0,214.8 557.0,230.2 606.0,238.9 655.0,244.9 704.0,249.8 753.0,252.5 802.0,255.1 851.0,258.1" fill="none" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="508.0" cy="214.8" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="557.0" cy="230.2" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="606.0" cy="238.9" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="655.0" cy="244.9" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="704.0" cy="249.8" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="753.0" cy="252.5" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="802.0" cy="255.1" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="851.0" cy="258.1" r="3.8" fill="#059669" stroke="#ffffff" stroke-width="1.4"/>
+<polyline points="508.0,216.3 557.0,241.9 606.0,256.2 655.0,264.9 704.0,271.3 753.0,276.2 802.0,278.9 851.0,282.6" fill="none" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="508.0" cy="216.3" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="557.0" cy="241.9" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="606.0" cy="256.2" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="655.0" cy="264.9" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="704.0" cy="271.3" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="753.0" cy="276.2" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="802.0" cy="278.9" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="851.0" cy="282.6" r="3.8" fill="#2563eb" stroke="#ffffff" stroke-width="1.4"/>
+<polyline points="508.0,216.3 557.0,241.5 606.0,266.8 655.0,277.0 704.0,287.5 753.0,290.5 802.0,294.3 851.0,300.3" fill="none" stroke="#d97706" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="508.0" cy="216.3" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="557.0" cy="241.5" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="606.0" cy="266.8" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="655.0" cy="277.0" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="704.0" cy="287.5" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="753.0" cy="290.5" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="802.0" cy="294.3" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="851.0" cy="300.3" r="3.8" fill="#d97706" stroke="#ffffff" stroke-width="1.4"/>
+<polyline points="508.0,209.1 557.0,283.4 606.0,332.8 655.0,352.7 704.0,353.9 753.0,367.1 802.0,376.9 851.0,396.5" fill="none" stroke="#ef4444" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="508.0" cy="209.1" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="557.0" cy="283.4" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="606.0" cy="332.8" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="655.0" cy="352.7" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="704.0" cy="353.9" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="753.0" cy="367.1" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="802.0" cy="376.9" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<circle cx="851.0" cy="396.5" r="3.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+<rect x="508" y="456" width="14" height="4" fill="#059669" rx="2"/>
+<text x="528" y="460" font-size="10.5" font-weight="700" fill="#059669">P1 T1 (Cuối: 75.6%)</text>
+<rect x="683" y="456" width="14" height="4" fill="#2563eb" rx="2"/>
+<text x="703" y="460" font-size="10.5" font-weight="700" fill="#2563eb">P2a T1 (Cuối: 69.1%)</text>
+<rect x="508" y="472" width="14" height="4" fill="#d97706" rx="2"/>
+<text x="528" y="476" font-size="10.5" font-weight="700" fill="#d97706">P2b T1 (Cuối: 64.4%)</text>
+<rect x="683" y="472" width="14" height="4" fill="#ef4444" rx="2"/>
+<text x="703" y="476" font-size="10.5" font-weight="700" fill="#ef4444">P0 T1 (Cuối: 38.9%)</text>
+<rect x="890" y="120" width="360" height="360" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+<text x="908" y="150" font-size="14" font-weight="700" fill="#0f172a">3. Ma Trận Nhầm Lẫn Router P2a (Stage 8)</text>
+<text x="908" y="167" font-size="11" fill="#64748b">Đường chéo chính nổi bật (Router Acc = 64.69%)</text>
+<text x="955.0" y="186" text-anchor="middle" font-size="10" font-weight="700" fill="#475569">P1</text>
+<text x="930" y="212.5" text-anchor="end" font-size="10" font-weight="700" fill="#475569">T1</text>
+<text x="989.0" y="186" text-anchor="middle" font-size="10" font-weight="700" fill="#475569">P2</text>
+<text x="930" y="246.5" text-anchor="end" font-size="10" font-weight="700" fill="#475569">T2</text>
+<text x="1023.0" y="186" text-anchor="middle" font-size="10" font-weight="700" fill="#475569">P3</text>
+<text x="930" y="280.5" text-anchor="end" font-size="10" font-weight="700" fill="#475569">T3</text>
+<text x="1057.0" y="186" text-anchor="middle" font-size="10" font-weight="700" fill="#475569">P4</text>
+<text x="930" y="314.5" text-anchor="end" font-size="10" font-weight="700" fill="#475569">T4</text>
+<text x="1091.0" y="186" text-anchor="middle" font-size="10" font-weight="700" fill="#475569">P5</text>
+<text x="930" y="348.5" text-anchor="end" font-size="10" font-weight="700" fill="#475569">T5</text>
+<text x="1125.0" y="186" text-anchor="middle" font-size="10" font-weight="700" fill="#475569">P6</text>
+<text x="930" y="382.5" text-anchor="end" font-size="10" font-weight="700" fill="#475569">T6</text>
+<text x="1159.0" y="186" text-anchor="middle" font-size="10" font-weight="700" fill="#475569">P7</text>
+<text x="930" y="416.5" text-anchor="end" font-size="10" font-weight="700" fill="#475569">T7</text>
+<text x="1193.0" y="186" text-anchor="middle" font-size="10" font-weight="700" fill="#475569">P8</text>
+<text x="930" y="450.5" text-anchor="end" font-size="10" font-weight="700" fill="#475569">T8</text>
+<rect x="938" y="192" width="32" height="32" rx="3" fill="#2563eb" fill-opacity="0.75"/>
+<text x="954.0" y="211.5" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">75%</text>
+<rect x="972" y="192" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.13"/>
+<text x="988.0" y="211.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="1006" y="192" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.10"/>
+<text x="1022.0" y="211.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">3%</text>
+<rect x="1040" y="192" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.22"/>
+<text x="1056.0" y="211.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">8%</text>
+<rect x="1074" y="192" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.08"/>
+<text x="1090.0" y="211.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">3%</text>
+<rect x="1108" y="192" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.06"/>
+<text x="1124.0" y="211.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">2%</text>
+<rect x="1142" y="192" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.06"/>
+<text x="1158.0" y="211.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">2%</text>
+<rect x="1176" y="192" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.07"/>
+<text x="1192.0" y="211.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">2%</text>
+<rect x="938" y="226" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.16"/>
+<text x="954.0" y="245.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">6%</text>
+<rect x="972" y="226" width="32" height="32" rx="3" fill="#2563eb" fill-opacity="0.60"/>
+<text x="988.0" y="245.5" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">60%</text>
+<rect x="1006" y="226" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.10"/>
+<text x="1022.0" y="245.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="1040" y="226" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.15"/>
+<text x="1056.0" y="245.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">5%</text>
+<rect x="1074" y="226" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.12"/>
+<text x="1090.0" y="245.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="1108" y="226" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.15"/>
+<text x="1124.0" y="245.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">5%</text>
+<rect x="1142" y="226" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.13"/>
+<text x="1158.0" y="245.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">5%</text>
+<rect x="1176" y="226" width="32" height="32" rx="3" fill="#ef4444" fill-opacity="0.30"/>
+<text x="1192.0" y="245.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">11%</text>
+<rect x="938" y="260" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.17"/>
+<text x="954.0" y="279.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">6%</text>
+<rect x="972" y="260" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.15"/>
+<text x="988.0" y="279.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">6%</text>
+<rect x="1006" y="260" width="32" height="32" rx="3" fill="#2563eb" fill-opacity="0.52"/>
+<text x="1022.0" y="279.5" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">52%</text>
+<rect x="1040" y="260" width="32" height="32" rx="3" fill="#ef4444" fill-opacity="0.26"/>
+<text x="1056.0" y="279.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">9%</text>
+<rect x="1074" y="260" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.13"/>
+<text x="1090.0" y="279.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">5%</text>
+<rect x="1108" y="260" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.08"/>
+<text x="1124.0" y="279.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">3%</text>
+<rect x="1142" y="260" width="32" height="32" rx="3" fill="#ef4444" fill-opacity="0.36"/>
+<text x="1158.0" y="279.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">13%</text>
+<rect x="1176" y="260" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.19"/>
+<text x="1192.0" y="279.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">7%</text>
+<rect x="938" y="294" width="32" height="32" rx="3" fill="#ef4444" fill-opacity="0.29"/>
+<text x="954.0" y="313.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">10%</text>
+<rect x="972" y="294" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.08"/>
+<text x="988.0" y="313.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">3%</text>
+<rect x="1006" y="294" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.13"/>
+<text x="1022.0" y="313.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">5%</text>
+<rect x="1040" y="294" width="32" height="32" rx="3" fill="#2563eb" fill-opacity="0.65"/>
+<text x="1056.0" y="313.5" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">65%</text>
+<rect x="1074" y="294" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.19"/>
+<text x="1090.0" y="313.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">7%</text>
+<rect x="1108" y="294" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.05"/>
+<text x="1124.0" y="313.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">2%</text>
+<rect x="1142" y="294" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.15"/>
+<text x="1158.0" y="313.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">5%</text>
+<rect x="1176" y="294" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.09"/>
+<text x="1192.0" y="313.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">3%</text>
+<rect x="938" y="328" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.16"/>
+<text x="954.0" y="347.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">6%</text>
+<rect x="972" y="328" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.18"/>
+<text x="988.0" y="347.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">6%</text>
+<rect x="1006" y="328" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.14"/>
+<text x="1022.0" y="347.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">5%</text>
+<rect x="1040" y="328" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.17"/>
+<text x="1056.0" y="347.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">6%</text>
+<rect x="1074" y="328" width="32" height="32" rx="3" fill="#2563eb" fill-opacity="0.59"/>
+<text x="1090.0" y="347.5" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">59%</text>
+<rect x="1108" y="328" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.11"/>
+<text x="1124.0" y="347.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="1142" y="328" width="32" height="32" rx="3" fill="#ef4444" fill-opacity="0.27"/>
+<text x="1158.0" y="347.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">10%</text>
+<rect x="1176" y="328" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.11"/>
+<text x="1192.0" y="347.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="938" y="362" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.03"/>
+<text x="954.0" y="381.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">1%</text>
+<rect x="972" y="362" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.07"/>
+<text x="988.0" y="381.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">2%</text>
+<rect x="1006" y="362" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.04"/>
+<text x="1022.0" y="381.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">2%</text>
+<rect x="1040" y="362" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.03"/>
+<text x="1056.0" y="381.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">1%</text>
+<rect x="1074" y="362" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.10"/>
+<text x="1090.0" y="381.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="1108" y="362" width="32" height="32" rx="3" fill="#2563eb" fill-opacity="0.78"/>
+<text x="1124.0" y="381.5" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">78%</text>
+<rect x="1142" y="362" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.21"/>
+<text x="1158.0" y="381.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">7%</text>
+<rect x="1176" y="362" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.14"/>
+<text x="1192.0" y="381.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">5%</text>
+<rect x="938" y="396" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.14"/>
+<text x="954.0" y="415.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">5%</text>
+<rect x="972" y="396" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.12"/>
+<text x="988.0" y="415.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="1006" y="396" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.13"/>
+<text x="1022.0" y="415.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="1040" y="396" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.10"/>
+<text x="1056.0" y="415.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="1074" y="396" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.16"/>
+<text x="1090.0" y="415.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">6%</text>
+<rect x="1108" y="396" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.12"/>
+<text x="1124.0" y="415.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="1142" y="396" width="32" height="32" rx="3" fill="#2563eb" fill-opacity="0.69"/>
+<text x="1158.0" y="415.5" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">69%</text>
+<rect x="1176" y="396" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.11"/>
+<text x="1192.0" y="415.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="938" y="430" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.12"/>
+<text x="954.0" y="449.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="972" y="430" width="32" height="32" rx="3" fill="#ef4444" fill-opacity="0.27"/>
+<text x="988.0" y="449.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">10%</text>
+<rect x="1006" y="430" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.16"/>
+<text x="1022.0" y="449.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">6%</text>
+<rect x="1040" y="430" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.07"/>
+<text x="1056.0" y="449.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">3%</text>
+<rect x="1074" y="430" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.10"/>
+<text x="1090.0" y="449.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="1108" y="430" width="32" height="32" rx="3" fill="#94a3b8" fill-opacity="0.11"/>
+<text x="1124.0" y="449.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">4%</text>
+<rect x="1142" y="430" width="32" height="32" rx="3" fill="#ef4444" fill-opacity="0.28"/>
+<text x="1158.0" y="449.5" text-anchor="middle" font-size="9" font-weight="700" fill="#1e293b">10%</text>
+<rect x="1176" y="430" width="32" height="32" rx="3" fill="#2563eb" fill-opacity="0.60"/>
+<text x="1192.0" y="449.5" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">60%</text>
+<rect x="30" y="500" width="1220" height="495" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#shadow)"/>
+<text x="55" y="534" font-size="15.5" font-weight="700" fill="#0f172a">4. So Sánh Độ Chính Xác Từng Tác Vụ Sau Khi Học Xong Cả 8 Tác Vụ (P0 vs P2b vs P2a vs P1)</text>
+<text x="55" y="553" font-size="12" fill="#64748b">Đỏ: P0 Shared (52.83%) | Cam: P2b Learned Router (56.04%) | Xanh dương: P2a Centroid Router (59.35%) | Xanh lá: P1 Oracle (70.14%)</text>
+<line x1="90" y1="864.0" x2="1215" y2="864.0" stroke="#f1f5f9" stroke-width="1"/>
+<text x="78" y="868.0" text-anchor="end" font-size="11" font-weight="600" fill="#94a3b8">20%</text>
+<line x1="90" y1="793.0" x2="1215" y2="793.0" stroke="#f1f5f9" stroke-width="1"/>
+<text x="78" y="797.0" text-anchor="end" font-size="11" font-weight="600" fill="#94a3b8">40%</text>
+<line x1="90" y1="722.0" x2="1215" y2="722.0" stroke="#f1f5f9" stroke-width="1"/>
+<text x="78" y="726.0" text-anchor="end" font-size="11" font-weight="600" fill="#94a3b8">60%</text>
+<line x1="90" y1="651.0" x2="1215" y2="651.0" stroke="#f1f5f9" stroke-width="1"/>
+<text x="78" y="655.0" text-anchor="end" font-size="11" font-weight="600" fill="#94a3b8">80%</text>
+<line x1="90" y1="580.0" x2="1215" y2="580.0" stroke="#f1f5f9" stroke-width="1"/>
+<text x="78" y="584.0" text-anchor="end" font-size="11" font-weight="600" fill="#94a3b8">100%</text>
+<rect x="103.8" y="796.9" width="26" height="138.1" rx="4" fill="#f87171"/>
+<text x="116.8" y="790.9" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b91c1c">38.9%</text>
+<rect x="132.8" y="706.4" width="26" height="228.6" rx="4" fill="#fbbf24"/>
+<text x="145.8" y="700.4" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b45309">64.4%</text>
+<rect x="161.8" y="689.7" width="26" height="245.3" rx="4" fill="#3b82f6"/>
+<text x="174.8" y="683.7" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d4ed8">69.1%</text>
+<rect x="190.8" y="666.6" width="26" height="268.4" rx="4" fill="#10b981"/>
+<text x="203.8" y="660.6" text-anchor="middle" font-size="9.5" font-weight="700" fill="#047857">75.6%</text>
+<rect x="126.3" y="640.6" width="68" height="16" rx="4" fill="#dbeafe"/>
+<text x="160.3" y="652.1" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1e40af">P2a +30.2%</text>
+<text x="160.3" y="957" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1e293b">Task 1</text>
+<text x="160.3" y="972" text-anchor="middle" font-size="10" fill="#64748b">Router P2a: 74.9%</text>
+<rect x="244.4" y="826.0" width="26" height="109.0" rx="4" fill="#f87171"/>
+<text x="257.4" y="820.0" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b91c1c">30.7%</text>
+<rect x="273.4" y="758.6" width="26" height="176.4" rx="4" fill="#fbbf24"/>
+<text x="286.4" y="752.6" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b45309">49.7%</text>
+<rect x="302.4" y="746.5" width="26" height="188.5" rx="4" fill="#3b82f6"/>
+<text x="315.4" y="740.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d4ed8">53.1%</text>
+<rect x="331.4" y="714.2" width="26" height="220.8" rx="4" fill="#10b981"/>
+<text x="344.4" y="708.2" text-anchor="middle" font-size="9.5" font-weight="700" fill="#047857">62.2%</text>
+<rect x="266.9" y="688.2" width="68" height="16" rx="4" fill="#dbeafe"/>
+<text x="300.9" y="699.7" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1e40af">P2a +22.4%</text>
+<text x="300.9" y="957" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1e293b">Task 2</text>
+<text x="300.9" y="972" text-anchor="middle" font-size="10" fill="#64748b">Router P2a: 59.9%</text>
+<rect x="385.1" y="788.0" width="26" height="147.0" rx="4" fill="#f87171"/>
+<text x="398.1" y="782.0" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b91c1c">41.4%</text>
+<rect x="414.1" y="772.8" width="26" height="162.2" rx="4" fill="#fbbf24"/>
+<text x="427.1" y="766.8" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b45309">45.7%</text>
+<rect x="443.1" y="767.1" width="26" height="167.9" rx="4" fill="#3b82f6"/>
+<text x="456.1" y="761.1" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d4ed8">47.3%</text>
+<rect x="472.1" y="696.1" width="26" height="238.9" rx="4" fill="#10b981"/>
+<text x="485.1" y="690.1" text-anchor="middle" font-size="9.5" font-weight="700" fill="#047857">67.3%</text>
+<rect x="407.6" y="670.1" width="68" height="16" rx="4" fill="#dbeafe"/>
+<text x="441.6" y="681.6" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1e40af">P2a +5.9%</text>
+<text x="441.6" y="957" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1e293b">Task 3</text>
+<text x="441.6" y="972" text-anchor="middle" font-size="10" fill="#64748b">Router P2a: 52.1%</text>
+<rect x="525.7" y="754.0" width="26" height="181.1" rx="4" fill="#f87171"/>
+<text x="538.7" y="748.0" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b91c1c">51.0%</text>
+<rect x="554.7" y="731.2" width="26" height="203.8" rx="4" fill="#fbbf24"/>
+<text x="567.7" y="725.2" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b45309">57.4%</text>
+<rect x="583.7" y="724.8" width="26" height="210.2" rx="4" fill="#3b82f6"/>
+<text x="596.7" y="718.8" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d4ed8">59.2%</text>
+<rect x="612.7" y="694.0" width="26" height="241.0" rx="4" fill="#10b981"/>
+<text x="625.7" y="688.0" text-anchor="middle" font-size="9.5" font-weight="700" fill="#047857">67.9%</text>
+<rect x="548.2" y="668.0" width="68" height="16" rx="4" fill="#dbeafe"/>
+<text x="582.2" y="679.5" text-anchor="middle" font-size="9.5" font-weight="800" fill="#1e40af">P2a +8.2%</text>
+<text x="582.2" y="957" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1e293b">Task 4</text>
+<text x="582.2" y="972" text-anchor="middle" font-size="10" fill="#64748b">Router P2a: 64.7%</text>
+<rect x="666.3" y="721.3" width="26" height="213.7" rx="4" fill="#f87171"/>
+<text x="679.3" y="715.3" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b91c1c">60.2%</text>
+<rect x="695.3" y="740.1" width="26" height="194.9" rx="4" fill="#fbbf24"/>
+<text x="708.3" y="734.1" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b45309">54.9%</text>
+<rect x="724.3" y="730.5" width="26" height="204.5" rx="4" fill="#3b82f6"/>
+<text x="737.3" y="724.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d4ed8">57.6%</text>
+<rect x="753.3" y="681.5" width="26" height="253.5" rx="4" fill="#10b981"/>
+<text x="766.3" y="675.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#047857">71.4%</text>
+<rect x="688.8" y="655.5" width="68" height="16" rx="4" fill="#fee2e2"/>
+<text x="722.8" y="667.0" text-anchor="middle" font-size="9.5" font-weight="800" fill="#991b1b">P2a -2.6%</text>
+<text x="722.8" y="957" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1e293b">Task 5</text>
+<text x="722.8" y="972" text-anchor="middle" font-size="10" fill="#64748b">Router P2a: 58.9%</text>
+<rect x="806.9" y="669.5" width="26" height="265.5" rx="4" fill="#f87171"/>
+<text x="819.9" y="663.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b91c1c">74.8%</text>
+<rect x="835.9" y="696.8" width="26" height="238.2" rx="4" fill="#fbbf24"/>
+<text x="848.9" y="690.8" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b45309">67.1%</text>
+<rect x="864.9" y="669.8" width="26" height="265.2" rx="4" fill="#3b82f6"/>
+<text x="877.9" y="663.8" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d4ed8">74.7%</text>
+<rect x="893.9" y="642.8" width="26" height="292.2" rx="4" fill="#10b981"/>
+<text x="906.9" y="636.8" text-anchor="middle" font-size="9.5" font-weight="700" fill="#047857">82.3%</text>
+<rect x="829.4" y="616.8" width="68" height="16" rx="4" fill="#fee2e2"/>
+<text x="863.4" y="628.3" text-anchor="middle" font-size="9.5" font-weight="800" fill="#991b1b">P2a -0.1%</text>
+<text x="863.4" y="957" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1e293b">Task 6</text>
+<text x="863.4" y="972" text-anchor="middle" font-size="10" fill="#64748b">Router P2a: 77.8%</text>
+<rect x="947.6" y="699.3" width="26" height="235.7" rx="4" fill="#f87171"/>
+<text x="960.6" y="693.3" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b91c1c">66.4%</text>
+<rect x="976.6" y="733.7" width="26" height="201.3" rx="4" fill="#fbbf24"/>
+<text x="989.6" y="727.7" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b45309">56.7%</text>
+<rect x="1005.6" y="713.1" width="26" height="221.9" rx="4" fill="#3b82f6"/>
+<text x="1018.6" y="707.1" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d4ed8">62.5%</text>
+<rect x="1034.6" y="680.8" width="26" height="254.2" rx="4" fill="#10b981"/>
+<text x="1047.6" y="674.8" text-anchor="middle" font-size="9.5" font-weight="700" fill="#047857">71.6%</text>
+<rect x="970.1" y="654.8" width="68" height="16" rx="4" fill="#fee2e2"/>
+<text x="1004.1" y="666.3" text-anchor="middle" font-size="9.5" font-weight="800" fill="#991b1b">P2a -3.9%</text>
+<text x="1004.1" y="957" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1e293b">Task 7</text>
+<text x="1004.1" y="972" text-anchor="middle" font-size="10" fill="#64748b">Router P2a: 68.9%</text>
+<rect x="1088.2" y="724.8" width="26" height="210.2" rx="4" fill="#f87171"/>
+<text x="1101.2" y="718.8" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b91c1c">59.2%</text>
+<rect x="1117.2" y="749.0" width="26" height="186.0" rx="4" fill="#fbbf24"/>
+<text x="1130.2" y="743.0" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b45309">52.4%</text>
+<rect x="1146.2" y="752.9" width="26" height="182.1" rx="4" fill="#3b82f6"/>
+<text x="1159.2" y="746.9" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d4ed8">51.3%</text>
+<rect x="1175.2" y="712.1" width="26" height="222.9" rx="4" fill="#10b981"/>
+<text x="1188.2" y="706.1" text-anchor="middle" font-size="9.5" font-weight="700" fill="#047857">62.8%</text>
+<rect x="1110.7" y="686.1" width="68" height="16" rx="4" fill="#fee2e2"/>
+<text x="1144.7" y="697.6" text-anchor="middle" font-size="9.5" font-weight="800" fill="#991b1b">P2a -7.9%</text>
+<text x="1144.7" y="957" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1e293b">Task 8</text>
+<text x="1144.7" y="972" text-anchor="middle" font-size="10" fill="#64748b">Router P2a: 60.3%</text>
+</svg>

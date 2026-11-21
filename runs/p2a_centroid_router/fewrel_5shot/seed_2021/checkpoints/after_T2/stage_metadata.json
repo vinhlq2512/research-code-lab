@@ -1,0 +1,8 @@
+{
+  "task_id": 1,
+  "cluster_id": 0,
+  "seen_classes": 20,
+  "router_type": "centroid",
+  "stage": 1,
+  "task_name": "T2"
+}

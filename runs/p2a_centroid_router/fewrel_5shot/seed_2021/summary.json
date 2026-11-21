@@ -1,0 +1,84 @@
+{
+  "final_average_accuracy": 0.59275,
+  "average_incremental_accuracy": 0.6971494047619048,
+  "average_forgetting": 0.11914285714285715,
+  "backward_transfer": -0.11914285714285715,
+  "most_forgotten_task": {
+    "task_id": 2,
+    "task_name": "T3",
+    "forgetting": 0.21599999999999997,
+    "initial_score": 0.7,
+    "final_score": 0.484
+  },
+  "per_task_forgetting": {
+    "task_0": 0.18699999999999994,
+    "task_1": 0.20199999999999996,
+    "task_2": 0.21599999999999997,
+    "task_3": 0.05900000000000005,
+    "task_4": 0.08200000000000007,
+    "task_5": 0.06900000000000006,
+    "task_6": 0.019000000000000017,
+    "task_7": 0.0
+  },
+  "old_vs_new_by_stage": {
+    "stage_1": {
+      "old_acc": 0.804,
+      "new_acc": 0.724
+    },
+    "stage_2": {
+      "old_acc": 0.727,
+      "new_acc": 0.7
+    },
+    "stage_3": {
+      "old_acc": 0.6836666666666668,
+      "new_acc": 0.658
+    },
+    "stage_4": {
+      "old_acc": 0.655,
+      "new_acc": 0.673
+    },
+    "stage_5": {
+      "old_acc": 0.6378,
+      "new_acc": 0.808
+    },
+    "stage_6": {
+      "old_acc": 0.6326666666666666,
+      "new_acc": 0.638
+    },
+    "stage_7": {
+      "old_acc": 0.6048571428571429,
+      "new_acc": 0.508
+    }
+  },
+  "incremental_accuracy": {
+    "T1": 0.867,
+    "T2": 0.764,
+    "T3": 0.718,
+    "T4": 0.67725,
+    "T5": 0.6586000000000001,
+    "T6": 0.6661666666666667,
+    "T7": 0.6334285714285715,
+    "T8": 0.59275
+  },
+  "average_accuracy_by_stage": [
+    0.867,
+    0.764,
+    0.718,
+    0.67725,
+    0.6586000000000001,
+    0.6661666666666667,
+    0.6334285714285715,
+    0.59275
+  ],
+  "evaluated_stage": 7,
+  "final_prototype_accuracy": 0.59275,
+  "final_routed_prototype_accuracy": 0.5935,
+  "final_router_accuracy": 0.646875,
+  "router_average_incremental_accuracy": 0.7822543154761905,
+  "oracle_gap_closed_pct": 37.69,
+  "experiment": "P2a",
+  "method": "p2a_centroid_router",
+  "router_type": "centroid",
+  "seed": 2021,
+  "total_duration_seconds": 256.73
+}
