@@ -486,6 +486,62 @@
         "metrics_file": "runs/p2b_learned_router/fewrel_5shot/seed_2021/metrics.json",
         "confusion_matrix_file": "runs/p2b_learned_router/fewrel_5shot/seed_2021/router_confusion_matrix.json"
       }
+    },
+    {
+      "id": "E011",
+      "title": "Proposed Method P3: Frozen BERT + Soft Top-K Composed Prompt Pool Router",
+      "method": "p3_soft_router",
+      "baseline_role": "proposed_soft_router",
+      "execution_mode": "google_colab_gpu",
+      "note": "Proposed method P3 (TAPTA Minimal): 100% frozen BERT with Soft Top-K Prompt Composition Router (K=2, tau=0.2) and Prompt Orthogonality Regularization (Zero Oracle Task ID, rehearsal-free M=0).",
+      "status": "completed_real",
+      "date": "2026-11-21",
+      "benchmark": {
+        "dataset": "FewRel Track A",
+        "num_tasks": 8,
+        "relations_per_task": 10,
+        "total_relations": 80,
+        "train_shot": 5,
+        "test_shot": 100,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "cuda"
+      },
+      "purity_boundary": {
+        "backbone_frozen": true,
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "latent_replay": false,
+        "prototypes_enabled": true,
+        "tree_hierarchy_enabled": false,
+        "prompt_tuning_enabled": true,
+        "routing_network_enabled": true,
+        "soft_prompt_composition": true,
+        "knowledge_distillation_enabled": false,
+        "regularizers": [
+          "prompt_orthogonality"
+        ]
+      },
+      "results": {
+        "prototype_accuracy_whole": 0.555,
+        "topk_gated_prototype_accuracy_whole": 0.562625,
+        "top1_gated_prototype_accuracy_whole": 0.5925,
+        "router_top1_accuracy_whole": 0.646875,
+        "router_topk_coverage_whole": 0.814125,
+        "router_top1_average_incremental_accuracy": 0.782254,
+        "router_topk_average_incremental_accuracy": 0.905764,
+        "average_incremental_accuracy": 0.668375,
+        "average_forgetting": 0.151286,
+        "backward_transfer": -0.151286,
+        "oracle_gap_closed_pct": 19.86
+      },
+      "artifacts": {
+        "config_path": "configs/p3_soft_router_fewrel_5shot_seed2021.yaml",
+        "results_dir": "runs/p3_soft_router/fewrel_5shot/seed_2021",
+        "metrics_file": "runs/p3_soft_router/fewrel_5shot/seed_2021/metrics.json",
+        "confusion_matrix_file": "runs/p3_soft_router/fewrel_5shot/seed_2021/router_confusion_matrix.json"
+      }
     }
   ]
 }

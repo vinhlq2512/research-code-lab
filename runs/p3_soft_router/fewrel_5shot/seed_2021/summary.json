@@ -1,0 +1,89 @@
+{
+  "final_average_accuracy": 0.555,
+  "average_incremental_accuracy": 0.6683752976190476,
+  "average_forgetting": 0.15128571428571425,
+  "backward_transfer": -0.15128571428571425,
+  "most_forgotten_task": {
+    "task_id": 2,
+    "task_name": "T3",
+    "forgetting": 0.286,
+    "initial_score": 0.601,
+    "final_score": 0.315
+  },
+  "per_task_forgetting": {
+    "task_0": 0.263,
+    "task_1": 0.21899999999999997,
+    "task_2": 0.286,
+    "task_3": 0.10499999999999998,
+    "task_4": 0.07499999999999996,
+    "task_5": 0.06699999999999995,
+    "task_6": 0.04399999999999993,
+    "task_7": 0.0
+  },
+  "old_vs_new_by_stage": {
+    "stage_1": {
+      "old_acc": 0.772,
+      "new_acc": 0.747
+    },
+    "stage_2": {
+      "old_acc": 0.7424999999999999,
+      "new_acc": 0.601
+    },
+    "stage_3": {
+      "old_acc": 0.6346666666666666,
+      "new_acc": 0.667
+    },
+    "stage_4": {
+      "old_acc": 0.58475,
+      "new_acc": 0.71
+    },
+    "stage_5": {
+      "old_acc": 0.5974,
+      "new_acc": 0.753
+    },
+    "stage_6": {
+      "old_acc": 0.5928333333333333,
+      "new_acc": 0.603
+    },
+    "stage_7": {
+      "old_acc": 0.5555714285714286,
+      "new_acc": 0.551
+    }
+  },
+  "incremental_accuracy": {
+    "T1": 0.867,
+    "T2": 0.7595000000000001,
+    "T3": 0.6953333333333332,
+    "T4": 0.6427499999999999,
+    "T5": 0.6098,
+    "T6": 0.6233333333333334,
+    "T7": 0.5942857142857143,
+    "T8": 0.555
+  },
+  "average_accuracy_by_stage": [
+    0.867,
+    0.7595000000000001,
+    0.6953333333333332,
+    0.6427499999999999,
+    0.6098,
+    0.6233333333333334,
+    0.5942857142857143,
+    0.555
+  ],
+  "evaluated_stage": 7,
+  "final_prototype_accuracy": 0.555,
+  "final_topk_gated_prototype_accuracy": 0.562625,
+  "final_top1_gated_prototype_accuracy": 0.5925,
+  "final_router_top1_accuracy": 0.646875,
+  "final_router_topk_coverage": 0.8141250386834145,
+  "router_top1_aia": 0.7822543154761905,
+  "router_topk_aia": 0.9057644691584366,
+  "oracle_gap_closed_pct": 19.86,
+  "gain_over_p2a_pct": -3.01,
+  "experiment": "P3",
+  "method": "p3_soft_router",
+  "top_k": 2,
+  "temperature": 0.2,
+  "seed": 2021,
+  "total_duration_seconds": 279.02
+}
