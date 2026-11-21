@@ -73,8 +73,8 @@ class PromptedBERTRelationClassifier(nn.Module):
             # P0: Single shared prompt
             self.prompt = nn.Parameter(torch.empty(1, self.prompt_length, hidden_size))
             nn.init.normal_(self.prompt, mean=0.0, std=0.02)
-        elif self.prompt_mode == "oracle_pool":
-            # P1: Pool of task prompts (one per task)
+        elif self.prompt_mode in ("oracle_pool", "routed_pool"):
+            # P1 / P2: Pool of task prompts (one per task)
             self.prompt_pool = nn.ParameterList([
                 nn.Parameter(torch.empty(1, self.prompt_length, hidden_size))
                 for _ in range(self.num_tasks)
@@ -82,7 +82,9 @@ class PromptedBERTRelationClassifier(nn.Module):
             for p in self.prompt_pool:
                 nn.init.normal_(p, mean=0.0, std=0.02)
         else:
-            raise ValueError(f"Unknown prompt_mode: {self.prompt_mode}. Choose 'shared' or 'oracle_pool'.")
+            raise ValueError(
+                f"Unknown prompt_mode: {self.prompt_mode}. Choose 'shared', 'oracle_pool', or 'routed_pool'."
+            )
 
         # Classification Head: Linear projection (1536 -> num_classes)
         self.dropout = nn.Dropout(self.classifier_dropout)
@@ -105,9 +107,9 @@ class PromptedBERTRelationClassifier(nn.Module):
         params: list[nn.Parameter] = list(self.classifier.parameters())
         if self.prompt_mode == "shared":
             params.append(self.prompt)
-        elif self.prompt_mode == "oracle_pool":
+        elif self.prompt_mode in ("oracle_pool", "routed_pool"):
             if task_id is None:
-                raise ValueError("task_id must be provided when getting trainable params for oracle_pool")
+                raise ValueError(f"task_id must be provided when getting trainable params for {self.prompt_mode}")
             params.append(self.prompt_pool[task_id])
         return params
 
@@ -120,9 +122,9 @@ class PromptedBERTRelationClassifier(nn.Module):
         if self.prompt_mode == "shared":
             return self.prompt.expand(batch_size, -1, -1)
 
-        if self.prompt_mode == "oracle_pool":
+        if self.prompt_mode in ("oracle_pool", "routed_pool"):
             if task_id is None:
-                raise ValueError("task_id is required in oracle_pool prompt mode.")
+                raise ValueError(f"task_id is required in {self.prompt_mode} prompt mode.")
 
             if isinstance(task_id, int):
                 return self.prompt_pool[task_id].expand(batch_size, -1, -1)
@@ -130,13 +132,32 @@ class PromptedBERTRelationClassifier(nn.Module):
                 if task_id.dim() == 0:
                     return self.prompt_pool[int(task_id.item())].expand(batch_size, -1, -1)
                 else:
-                    # Mixed batch of task IDs
+                    # Mixed batch of task IDs (e.g., per-sample routed task predictions)
                     prompts = [self.prompt_pool[int(t.item())] for t in task_id]
                     return torch.cat(prompts, dim=0)
             else:
                 raise TypeError(f"Unsupported task_id type: {type(task_id)}")
 
         raise RuntimeError(f"Invalid prompt_mode: {self.prompt_mode}")
+
+    @torch.no_grad()
+    def extract_unprompted_query(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+        e1_indices: torch.Tensor,
+        e2_indices: torch.Tensor,
+    ) -> torch.Tensor:
+        """Extract stationary [h_e1; h_e2] query representations from 100% frozen unprompted BERT."""
+        batch_size = input_ids.size(0)
+        outputs = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
+        seq_out = outputs.last_hidden_state  # [B, N, d]
+
+        b_idx = torch.arange(batch_size, device=input_ids.device)
+        q_e1 = seq_out[b_idx, e1_indices]
+        q_e2 = seq_out[b_idx, e2_indices]
+        q_r = torch.cat([q_e1, q_e2], dim=-1)  # [B, 1536]
+        return q_r
 
     def extract_features(
         self,
@@ -218,6 +239,25 @@ class PromptedBERTRelationClassifier(nn.Module):
             return full_sim
 
         return sim
+
+    def predict_routed_prototype(
+        self,
+        h_r: torch.Tensor,
+        pred_task_ids: torch.Tensor,
+        relations_per_task: int = 10,
+    ) -> torch.Tensor:
+        """Compute prototype similarity gated by each sample's routed task prediction."""
+        sim = self.predict_prototype(h_r, seen_classes_only=True).clone()
+        batch_size = h_r.size(0)
+        gated_sim = torch.full_like(sim, -1e9)
+
+        for i in range(batch_size):
+            t_id = int(pred_task_ids[i].item())
+            c_start = t_id * relations_per_task
+            c_end = min(c_start + relations_per_task, self.seen_classes)
+            gated_sim[i, c_start:c_end] = sim[i, c_start:c_end]
+
+        return gated_sim
 
     def update_prototypes(
         self,
