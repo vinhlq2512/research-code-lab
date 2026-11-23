@@ -26,8 +26,9 @@ class PromptedBERTRelationClassifier(nn.Module):
     def __init__(
         self,
         backbone_name: str = "bert-base-uncased",
-        prompt_mode: str = "shared",  # "shared" (P0) or "oracle_pool" (P1)
+        prompt_mode: str = "shared",  # "shared" (P0), "oracle_pool" (P1), "routed_pool" (P2/P3), "hierarchical_tree" (P4)
         prompt_length: int = 8,
+        root_prompt_length: int = 4,
         num_tasks: int = 8,
         num_classes: int = 80,
         classifier_dropout: float = 0.1,
@@ -37,6 +38,8 @@ class PromptedBERTRelationClassifier(nn.Module):
         self.backbone_name = backbone_name
         self.prompt_mode = prompt_mode
         self.prompt_length = int(prompt_length)
+        self.root_prompt_length = int(root_prompt_length)
+        self.leaf_prompt_length = int(self.prompt_length - self.root_prompt_length)
         self.num_tasks = int(num_tasks)
         self.num_classes = int(num_classes)
         self.classifier_dropout = float(classifier_dropout)
@@ -74,16 +77,33 @@ class PromptedBERTRelationClassifier(nn.Module):
             self.prompt = nn.Parameter(torch.empty(1, self.prompt_length, hidden_size))
             nn.init.normal_(self.prompt, mean=0.0, std=0.02)
         elif self.prompt_mode in ("oracle_pool", "routed_pool"):
-            # P1 / P2: Pool of task prompts (one per task)
+            # P1 / P2 / P3: Pool of task prompts (one per task)
             self.prompt_pool = nn.ParameterList([
                 nn.Parameter(torch.empty(1, self.prompt_length, hidden_size))
                 for _ in range(self.num_tasks)
             ])
             for p in self.prompt_pool:
                 nn.init.normal_(p, mean=0.0, std=0.02)
+        elif self.prompt_mode == "hierarchical_tree":
+            # P4: Hierarchical Prompt Tree (Root prompt + Leaf prompts per task)
+            assert self.root_prompt_length > 0 and self.leaf_prompt_length > 0, (
+                f"root_prompt_length ({self.root_prompt_length}) and "
+                f"leaf_prompt_length ({self.leaf_prompt_length}) must be positive."
+            )
+            # Shared root prompt
+            self.root_prompt = nn.Parameter(torch.empty(1, self.root_prompt_length, hidden_size))
+            nn.init.normal_(self.root_prompt, mean=0.0, std=0.02)
+
+            # Task-specific leaf prompts
+            self.leaf_prompts = nn.ParameterList([
+                nn.Parameter(torch.empty(1, self.leaf_prompt_length, hidden_size))
+                for _ in range(self.num_tasks)
+            ])
+            for lp in self.leaf_prompts:
+                nn.init.normal_(lp, mean=0.0, std=0.02)
         else:
             raise ValueError(
-                f"Unknown prompt_mode: {self.prompt_mode}. Choose 'shared', 'oracle_pool', or 'routed_pool'."
+                f"Unknown prompt_mode: {self.prompt_mode}. Choose 'shared', 'oracle_pool', 'routed_pool', or 'hierarchical_tree'."
             )
 
         # Classification Head: Linear projection (1536 -> num_classes)
@@ -111,6 +131,13 @@ class PromptedBERTRelationClassifier(nn.Module):
             if task_id is None:
                 raise ValueError(f"task_id must be provided when getting trainable params for {self.prompt_mode}")
             params.append(self.prompt_pool[task_id])
+        elif self.prompt_mode == "hierarchical_tree":
+            if task_id is None:
+                raise ValueError("task_id must be provided when getting trainable params for hierarchical_tree")
+            params.append(self.leaf_prompts[task_id])
+            if task_id == 0:
+                # Root prompt is trained alongside task 0 leaf prompt, then frozen for stability
+                params.append(self.root_prompt)
         return params
 
     def get_prompt_for_batch(
@@ -132,13 +159,45 @@ class PromptedBERTRelationClassifier(nn.Module):
                 if task_id.dim() == 0:
                     return self.prompt_pool[int(task_id.item())].expand(batch_size, -1, -1)
                 else:
-                    # Mixed batch of task IDs (e.g., per-sample routed task predictions)
                     prompts = [self.prompt_pool[int(t.item())] for t in task_id]
                     return torch.cat(prompts, dim=0)
             else:
                 raise TypeError(f"Unsupported task_id type: {type(task_id)}")
 
+        if self.prompt_mode == "hierarchical_tree":
+            if task_id is None:
+                raise ValueError("task_id is required in hierarchical_tree prompt mode.")
+
+            root_expanded = self.root_prompt.expand(batch_size, -1, -1)  # [B, L_root, d]
+
+            if isinstance(task_id, int):
+                leaf_expanded = self.leaf_prompts[task_id].expand(batch_size, -1, -1)  # [B, L_leaf, d]
+            elif isinstance(task_id, torch.Tensor):
+                if task_id.dim() == 0:
+                    leaf_expanded = self.leaf_prompts[int(task_id.item())].expand(batch_size, -1, -1)
+                else:
+                    leaf_prompts_list = [self.leaf_prompts[int(t.item())] for t in task_id]
+                    leaf_expanded = torch.cat(leaf_prompts_list, dim=0)  # [B, L_leaf, d]
+            else:
+                raise TypeError(f"Unsupported task_id type: {type(task_id)}")
+
+            # Hierarchical vertical concatenation: [B, L_root + L_leaf, d] = [B, L, d]
+            return torch.cat([root_expanded, leaf_expanded], dim=1)
+
         raise RuntimeError(f"Invalid prompt_mode: {self.prompt_mode}")
+
+    def get_full_task_prompts(self, seen_tasks: int) -> list[torch.Tensor]:
+        """Return list of full [1, L, H] prompts for tasks 0..seen_tasks-1."""
+        if self.prompt_mode == "hierarchical_tree":
+            return [
+                torch.cat([self.root_prompt, self.leaf_prompts[t]], dim=1)
+                for t in range(seen_tasks)
+            ]
+        elif self.prompt_mode in ("oracle_pool", "routed_pool"):
+            return [self.prompt_pool[t] for t in range(seen_tasks)]
+        elif self.prompt_mode == "shared":
+            return [self.prompt for _ in range(seen_tasks)]
+        raise ValueError(f"Unknown prompt_mode: {self.prompt_mode}")
 
     @torch.no_grad()
     def extract_unprompted_query(
@@ -292,23 +351,74 @@ class PromptedBERTRelationClassifier(nn.Module):
 
         return gated_sim
 
+    def predict_decision_fusion_prototype(
+        self,
+        candidate_sims: list[torch.Tensor] | torch.Tensor,
+        topk_weights: torch.Tensor,
+    ) -> torch.Tensor:
+        """Combine cosine similarity matrices from Top-K candidate prompts weighted by router confidence.
+
+        Args:
+            candidate_sims: List of K tensors of shape [B, C], or a tensor of shape [B, K, C]
+            topk_weights: Tensor of shape [B, K], softmax weights for Top-K candidate tasks
+        Returns:
+            fused_sim: Tensor of shape [B, C]
+        """
+        if isinstance(candidate_sims, list):
+            stacked_sims = torch.stack(candidate_sims, dim=1)  # [B, K, C]
+        else:
+            stacked_sims = candidate_sims
+        w = topk_weights.unsqueeze(-1)  # [B, K, 1]
+        fused_sim = torch.sum(w * stacked_sims, dim=1)  # [B, C]
+        return fused_sim
+
+    def gate_similarity_to_topk_tasks(
+        self,
+        sim: torch.Tensor,
+        topk_task_ids: torch.Tensor,
+        relations_per_task: int = 10,
+    ) -> torch.Tensor:
+        """Gate any similarity matrix [B, C] to the union of relations of Top-K candidate tasks."""
+        batch_size = sim.size(0)
+        k = topk_task_ids.size(1)
+        gated_sim = torch.full_like(sim, -1e9)
+
+        for i in range(batch_size):
+            for k_idx in range(k):
+                t_id = int(topk_task_ids[i, k_idx].item())
+                c_start = t_id * relations_per_task
+                c_end = min(c_start + relations_per_task, self.seen_classes)
+                gated_sim[i, c_start:c_end] = sim[i, c_start:c_end]
+
+        return gated_sim
+
     def compute_orthogonality_loss(self, task_id: int) -> torch.Tensor:
-        """Compute cosine orthogonality/diversity loss between P_t and previous prompts {P_0..P_{t-1}}."""
-        if self.prompt_mode not in ("oracle_pool", "routed_pool") or task_id <= 0:
+        """Compute cosine orthogonality/diversity loss between current prompt and previous prompts."""
+        if task_id <= 0:
             return torch.tensor(0.0, device=self.target_device)
 
-        current_p = self.prompt_pool[task_id]  # [1, L, H]
-        current_mean = F.normalize(current_p.mean(dim=1), p=2, dim=-1)  # [1, H]
+        if self.prompt_mode == "hierarchical_tree":
+            current_p = self.leaf_prompts[task_id]  # [1, L_leaf, H]
+            current_mean = F.normalize(current_p.mean(dim=1), p=2, dim=-1)  # [1, H]
+            prev_prompts = torch.stack(
+                [self.leaf_prompts[j].detach().mean(dim=1) for j in range(task_id)], dim=0
+            )  # [task_id, 1, H]
+            prev_means = F.normalize(prev_prompts.squeeze(1), p=2, dim=-1)  # [task_id, H]
+            sims = torch.mm(current_mean, prev_means.t()).squeeze(0)
+            orth_loss = torch.mean(torch.abs(sims))
+            return orth_loss
+        elif self.prompt_mode in ("oracle_pool", "routed_pool"):
+            current_p = self.prompt_pool[task_id]  # [1, L, H]
+            current_mean = F.normalize(current_p.mean(dim=1), p=2, dim=-1)  # [1, H]
+            prev_prompts = torch.stack(
+                [self.prompt_pool[j].detach().mean(dim=1) for j in range(task_id)], dim=0
+            )  # [task_id, 1, H]
+            prev_means = F.normalize(prev_prompts.squeeze(1), p=2, dim=-1)  # [task_id, H]
+            sims = torch.mm(current_mean, prev_means.t()).squeeze(0)
+            orth_loss = torch.mean(torch.abs(sims))
+            return orth_loss
 
-        prev_prompts = torch.stack(
-            [self.prompt_pool[j].detach().mean(dim=1) for j in range(task_id)], dim=0
-        )  # [task_id, 1, H]
-        prev_means = F.normalize(prev_prompts.squeeze(1), p=2, dim=-1)  # [task_id, H]
-
-        # Cosine similarities: [task_id]
-        sims = torch.mm(current_mean, prev_means.t()).squeeze(0)
-        orth_loss = torch.mean(torch.abs(sims))
-        return orth_loss
+        return torch.tensor(0.0, device=self.target_device)
 
     def update_prototypes(
         self,

@@ -236,6 +236,51 @@ class TaskRouter(nn.Module):
         }
 
     @torch.no_grad()
+    def get_topk_routing(
+        self,
+        query_features: torch.Tensor,
+        seen_tasks: int,
+        top_k: int = 2,
+        temperature: float = 0.2,
+    ) -> dict[str, torch.Tensor]:
+        """Compute Top-K candidate tasks and their softmax confidence weights.
+
+        Args:
+            query_features: [B, D] unprompted query embeddings from frozen BERT
+            seen_tasks: number of observed tasks (1..num_tasks)
+            top_k: number of candidate tasks to retrieve (K >= 1)
+            temperature: temperature parameter tau for sharpening/smoothing softmax weights
+
+        Returns:
+            dict containing:
+                "topk_indices": [B, K] task indices chosen for each sample
+                "topk_weights": [B, K] softmax weights assigned to top-K tasks
+                "pred_task_ids": [B] hard top-1 task predictions
+                "task_scores": [B, seen_tasks] raw router scores
+        """
+        self.eval()
+        scores = self.compute_centroid_scores(query_features, seen_tasks=seen_tasks)
+        if self.router_type != "centroid":
+            learned_logits = self.compute_learned_scores(query_features, seen_tasks=seen_tasks)
+            learned_probs = F.softmax(learned_logits, dim=-1)
+            centroid_probs = F.softmax(self.temperature * scores, dim=-1)
+            w = self.residual_anchor_weight
+            scores = (1.0 - w) * learned_probs + w * centroid_probs
+
+        k = max(1, min(int(top_k), int(seen_tasks)))
+        topk_scores, topk_indices = torch.topk(scores, k=k, dim=-1)  # [B, K]
+        temp = max(float(temperature), 1e-4)
+        topk_weights = F.softmax(topk_scores / temp, dim=-1)  # [B, K]
+        pred_task_ids = topk_indices[:, 0]  # [B] Top-1 prediction
+
+        return {
+            "topk_indices": topk_indices,
+            "topk_weights": topk_weights,
+            "pred_task_ids": pred_task_ids,
+            "task_scores": scores,
+        }
+
+    @torch.no_grad()
     def compose_soft_prompt(
         self,
         query_features: torch.Tensor,
