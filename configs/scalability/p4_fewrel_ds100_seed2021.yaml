@@ -1,0 +1,63 @@
+experiment:
+  id: DS_DS100
+  name: tapta_p4_fewrel_ds100
+  baseline_role: proposed_scalability
+  description: 'TAPTA P4 Data Scalability: DS-100 (100-shot) with Nested Sampling,
+    M=0, Frozen BERT, Hierarchical Prompt Tree (L_root=4, L_leaf=4)'
+dataset:
+  name: fewrel
+  loader_type: scalable
+  track: scalability
+  num_tasks: 8
+  relations_per_task: 10
+  total_relations: 80
+  train_shot: 100
+  test_shot: 100
+  full_train_limit: 420
+  sampling_strategy: deterministic_nested
+  task_order_strategy: conpl_seed_shuffle
+seed: 2021
+model:
+  backbone: bert-base-uncased
+  prompt_mode: hierarchical_tree
+  prompt_length: 8
+  root_prompt_length: 4
+  leaf_prompt_length: 4
+  max_seq_length: 128
+  num_classes: 80
+  classifier_dropout: 0.1
+  freeze_backbone: true
+  freeze_root_after_task0: true
+router:
+  type: centroid
+  subcentroid_weight: 0.7
+  top_k: 2
+  temperature: 0.2
+continual:
+  method: p4_hierarchical_tree
+  memory_size: 0
+  task_oracle_inference: false
+training:
+  learning_rate: 0.001
+  weight_decay: 0.01
+  batch_size: 32
+  epochs_per_task: 8
+  warmup_ratio: 0.1
+  orthogonality_lambda: 0.05
+  optimizer: AdamW
+  gradient_clip_norm: 1.0
+  device: cuda
+evaluation:
+  batch_size: 64
+  evaluate_seen_tasks: true
+  save_per_task_metrics: true
+  primary_metric: decision_fusion_accuracy
+output:
+  results_dir: runs/tapta_scalability/fewrel_ds100/seed_2021
+  metrics_file: metrics.json
+  summary_file: summary.json
+  matrix_csv: performance_matrix.csv
+  matrix_json: performance_matrix.json
+  conclusion_file: conclusion.md
+  resource_usage_file: resource_usage.json
+  dataset_manifest_file: dataset_manifest.json
