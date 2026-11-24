@@ -422,7 +422,11 @@ def export_confusion_matrix_csv(matrix: list[list[float]], path: Path) -> None:
             writer.writerow([f"T{i + 1}"] + [f"{val:.4f}" for val in row])
 
 
-def run_experiment(config_path: str | Path, device_override: str | None = None) -> dict[str, Any]:
+def run_experiment(
+    config_path: str | Path,
+    device_override: str | None = None,
+    seed_override: int | None = None,
+) -> dict[str, Any]:
     config = load_yaml_config(config_path)
     exp_cfg = config.get("experiment", {})
     model_cfg = config.get("model", {})
@@ -430,11 +434,15 @@ def run_experiment(config_path: str | Path, device_override: str | None = None) 
     router_cfg = config.get("router", {})
     exp_id = exp_cfg.get("id", "P4")
 
-    seed = int(config.get("seed", 2021))
+    seed = seed_override if seed_override is not None else int(config.get("seed", 2021))
     set_seed(seed)
 
     output_cfg = config.get("output", {})
-    results_dir = REPO_ROOT / output_cfg.get("results_dir", "runs/p4_hierarchical_tree/fewrel_5shot/seed_2021")
+    raw_results_dir = output_cfg.get("results_dir", "runs/p4_hierarchical_tree/fewrel_5shot/seed_2021")
+    if seed_override is not None:
+        import re
+        raw_results_dir = re.sub(r"seed_\d+", f"seed_{seed}", raw_results_dir)
+    results_dir = REPO_ROOT / raw_results_dir
     results_dir.mkdir(parents=True, exist_ok=True)
 
     log_file = results_dir / "experiment.log"
@@ -778,9 +786,15 @@ def main() -> None:
         default=None,
         help="Override execution device ('cuda', 'mps', 'cpu')",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Override random seed and output directory (e.g. --seed 2022)",
+    )
     args = parser.parse_args()
 
-    run_experiment(config_path=args.config, device_override=args.device)
+    run_experiment(config_path=args.config, device_override=args.device, seed_override=args.seed)
 
 
 if __name__ == "__main__":

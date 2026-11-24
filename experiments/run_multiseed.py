@@ -60,10 +60,11 @@ def run_multiseed(
                 str(REPO_ROOT / "experiments/run_p4.py"),
                 "--config",
                 base_config,
+                "--seed",
+                str(seed),
             ]
             if device:
                 cmd.extend(["--device", device])
-            # Pass seed override if supported, or run_p4 can accept --seed
             print(f"  Executing: {' '.join(cmd)}")
             subprocess.run(cmd, check=True)
 
