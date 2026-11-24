@@ -96,35 +96,40 @@ class ProtocolV1Dataset:
         # Load relation names
         rel_name_file = self.base_dir / "relation_name.txt"
         with rel_name_file.open("r", encoding="utf-8") as f:
-            self.relation_names = [line.strip() for line in f]
-        assert len(self.relation_names) == 80, f"Expected 80 relation names, found {len(self.relation_names)}"
+            self.relation_names = [line.strip() for line in f if line.strip()]
+        self.total_relations = len(self.relation_names)
+        self.num_tasks = 8
+        self.relations_per_task = max(1, self.total_relations // self.num_tasks)
+        assert self.total_relations in (40, 41, 80), (
+            f"Expected 80 relation names for FewRel or 40/41 for TACRED, found {self.total_relations}"
+        )
 
-        # Load relation indices (1..80) and cluster labels (0..7)
+        # Load relation indices and cluster labels
         rel_index_file = self.base_dir / "rel_index.npy"
         cluster_label_file = self.split_dir / "rel_cluster_label_0.npy"
         self.rel_index = np.load(rel_index_file)
         self.cluster_labels = np.load(cluster_label_file)
 
-        # Build map: rel_id (1..80) -> cluster_id (0..7)
+        # Build map: rel_id -> cluster_id (0..num_tasks-1)
         self.rel_to_cluster: dict[int, int] = {}
         for idx, r_id in enumerate(self.rel_index):
             self.rel_to_cluster[int(r_id)] = int(self.cluster_labels[idx])
 
         # Group relations by cluster
-        self.cluster_to_rels: dict[int, list[int]] = {c: [] for c in range(8)}
+        self.cluster_to_rels: dict[int, list[int]] = {c: [] for c in range(self.num_tasks)}
         for r_id, c_id in self.rel_to_cluster.items():
             self.cluster_to_rels[c_id].append(r_id)
 
-        for c in range(8):
-            assert len(self.cluster_to_rels[c]) == 10, f"Cluster {c} has {len(self.cluster_to_rels[c])} relations, expected 10"
+        for c in range(self.num_tasks):
+            assert len(self.cluster_to_rels[c]) > 0, f"Cluster {c} is empty!"
 
     def _determine_cluster_order(self) -> list[int]:
-        """Compute ordering of the 8 clusters for continual learning."""
+        """Compute ordering of the clusters for continual learning."""
         if self.task_order_strategy == "sequential":
-            return list(range(8))
+            return list(range(self.num_tasks))
         elif self.task_order_strategy == "conpl_seed_shuffle":
             rng = random.Random(self.seed)
-            shuffled = list(range(8))
+            shuffled = list(range(self.num_tasks))
             rng.shuffle(shuffled)
             order = np.argsort(shuffled).tolist()
             return [int(x) for x in order]
@@ -133,7 +138,7 @@ class ProtocolV1Dataset:
 
     def _parse_lines(self, file_path: Path) -> dict[int, list[dict[str, Any]]]:
         """Parse TSV format from CFRL/ConPL dataset."""
-        rel_to_raw: dict[int, list[dict[str, Any]]] = {r: [] for r in range(1, 81)}
+        rel_to_raw: dict[int, list[dict[str, Any]]] = {r: [] for r in range(1, self.total_relations + 1)}
         with file_path.open("r", encoding="utf-8") as f:
             for line in f:
                 parts = line.strip().split("\t")
