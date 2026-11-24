@@ -527,6 +527,62 @@ experiments:
       metrics_file: "runs/p3_soft_router/fewrel_5shot/seed_2021/metrics.json"
       confusion_matrix_file: "runs/p3_soft_router/fewrel_5shot/seed_2021/router_confusion_matrix.json"
 
+  - id: "E012"
+    title: "Proposed Method P4: Frozen BERT + TAPTA Hierarchical Prompt Tree & Decision Fusion"
+    method: "p4_hierarchical_tree"
+    baseline_role: "proposed_hierarchical_tree"
+    execution_mode: "google_colab_gpu"
+    note: "Proposed method P4 (TAPTA Full): 100% frozen BERT with 2-tier Hierarchical Prompt Tree (L_root=4, L_leaf=4), Sub-Centroid Task Router, and Decision-Level Soft Prototype Fusion (Zero Oracle Task ID, rehearsal-free M=0)."
+    status: "completed_real"
+    date: "2026-11-24"
+
+    benchmark:
+      dataset: "FewRel Track A"
+      num_tasks: 8
+      relations_per_task: 10
+      total_relations: 80
+      train_shot: 5
+      test_shot: 100
+      seed: 2021
+      backbone: "bert-base-uncased"
+      max_seq_length: 128
+      device: "cuda"
+
+    purity_boundary:
+      backbone_frozen: true
+      memory_budget: 0
+      replay_buffer: false
+      latent_replay: false
+      prototypes_enabled: true
+      tree_hierarchy_enabled: true
+      prompt_tuning_enabled: true
+      routing_network_enabled: true
+      decision_level_fusion: true
+      knowledge_distillation_enabled: false
+      regularizers: ["prompt_orthogonality", "root_prompt_freezing"]
+
+    results:
+      decision_fusion_accuracy_whole: 0.57575
+      decision_fusion_topk_gated_accuracy_whole: 0.57925
+      tree_top1_prototype_accuracy_whole: 0.58375
+      tree_top1_gated_prototype_accuracy_whole: 0.588
+      tree_topk_gated_prototype_accuracy_whole: 0.58825
+      router_top1_accuracy_whole: 0.646875
+      router_topk_coverage_whole: 0.814125
+      router_top1_average_incremental_accuracy: 0.782254
+      router_topk_average_incremental_accuracy: 0.905764
+      average_incremental_accuracy: 0.688559
+      average_forgetting: 0.118857
+      backward_transfer: -0.118857
+      oracle_gap_closed_pct: 34.51
+
+    artifacts:
+      config_path: "configs/p4_hierarchical_prompt_tree_fewrel_5shot_seed2021.yaml"
+      results_dir: "runs/p4_hierarchical_tree/fewrel_5shot/seed_2021"
+      metrics_file: "runs/p4_hierarchical_tree/fewrel_5shot/seed_2021/metrics.json"
+      confusion_matrix_file: "runs/p4_hierarchical_tree/fewrel_5shot/seed_2021/router_confusion_matrix.json"
+
+
 
 
 
