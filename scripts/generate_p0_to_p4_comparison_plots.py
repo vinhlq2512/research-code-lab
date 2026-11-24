@@ -23,6 +23,8 @@ P3_METRICS = REPO_ROOT / "runs" / "p3_soft_router" / "fewrel_5shot" / "seed_2021
 P4_METRICS = REPO_ROOT / "runs" / "p4_hierarchical_tree" / "fewrel_5shot" / "seed_2021" / "metrics.json"
 
 VAULT_ATTACHMENTS = Path("/Users/vinhlq2512/Obisidian/Knowledge Hub/06 - Attachments")
+CANVAS_WIDTH = 1360
+CANVAS_HEIGHT = 1080
 
 
 def build_p0_to_p4_svg(p0: dict, p1: dict, p2a: dict, p2b: dict, p3: dict, p4: dict) -> str:
@@ -51,7 +53,7 @@ def build_p0_to_p4_svg(p0: dict, p1: dict, p2a: dict, p2b: dict, p3: dict, p4: d
     p3_final = [p3_m[7][t] * 100 for t in range(8)]
     p4_final = [p4_m[7][t] * 100 for t in range(8)]
 
-    W, H = 1360, 1080
+    W, H = CANVAS_WIDTH, CANVAS_HEIGHT
     svg: list[str] = []
     svg.append(
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="100%" height="100%" '
@@ -75,7 +77,7 @@ def build_p0_to_p4_svg(p0: dict, p1: dict, p2a: dict, p2b: dict, p3: dict, p4: d
     svg.append(f'<rect x="30" y="20" width="{W - 60}" height="84" rx="10" fill="#0f172a" filter="url(#shadow)"/>')
     svg.append(
         '<text x="50" y="53" font-size="19" font-weight="800" fill="#ffffff">'
-        "ĐỐI SÁNH THỰC NGHIỆM 6 MÔ HÌNH: P0 (SÀN) — P2b — P3 — P4 (CÂY MỒI NHẮC & DECISION FUSION) — P2a — P1 (TRẦN)"
+        "ĐỐI SÁNH THỰC NGHIỆM 6 MÔ HÌNH: P0 (SÀN) — P2b — P3 — P4 (CÂY MỒI NHẮC &amp; DECISION FUSION) — P2a — P1 (TRẦN)"
         "</text>"
     )
     svg.append(
@@ -180,7 +182,7 @@ def build_p0_to_p4_svg(p0: dict, p1: dict, p2a: dict, p2b: dict, p3: dict, p4: d
     )
     svg.append(
         f'<text x="{p2_x + 18}" y="{p2_y + 30}" font-size="14" font-weight="700" fill="#0f172a">'
-        "2. Đột phá Chống Quên lãng & Neo giữ T1"
+        "2. Đột phá Chống Quên lãng &amp; Neo giữ T1"
         "</text>"
     )
     svg.append(
@@ -368,13 +370,34 @@ def main() -> int:
     out_svg.write_text(svg_content, encoding="utf-8")
     print(f"Saved SVG to: {out_svg}")
 
-    # Render PNG using qlmanage
-    subprocess.run(["qlmanage", "-t", "-s", "1360", "-o", "/tmp", str(out_svg)], check=True)
-    tmp_png = Path("/tmp") / f"{out_svg.name}.png"
+    # Render PNG using Google Chrome headless (exact aspect ratio 1360x1080) or fallback to qlmanage
+    chrome_path = Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
     out_png = out_dir / "p0_to_p4_comparison.png"
-    if tmp_png.exists():
-        tmp_png.replace(out_png)
-        print(f"Rendered PNG to: {out_png}")
+    rendered = False
+
+    if chrome_path.exists():
+        try:
+            cmd = [
+                str(chrome_path),
+                "--headless",
+                "--disable-gpu",
+                f"--screenshot={out_png}",
+                f"--window-size={CANVAS_WIDTH},{CANVAS_HEIGHT}",
+                str(out_svg.resolve()),
+            ]
+            subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if out_png.exists():
+                print(f"Rendered PNG using Chrome headless to: {out_png}")
+                rendered = True
+        except Exception as e:
+            print(f"Chrome rendering failed: {e}, falling back to qlmanage.")
+
+    if not rendered:
+        subprocess.run(["qlmanage", "-t", "-s", str(CANVAS_WIDTH), "-o", "/tmp", str(out_svg)], check=True)
+        tmp_png = Path("/tmp") / f"{out_svg.name}.png"
+        if tmp_png.exists():
+            tmp_png.replace(out_png)
+            print(f"Rendered PNG using qlmanage to: {out_png}")
 
     VAULT_ATTACHMENTS.mkdir(parents=True, exist_ok=True)
     vault_svg = VAULT_ATTACHMENTS / "p0-to-p4-comparison.svg"
