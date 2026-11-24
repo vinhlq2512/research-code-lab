@@ -601,6 +601,67 @@
         "metrics_file": "runs/p4_hierarchical_tree/fewrel_5shot/seed_2021/metrics.json",
         "confusion_matrix_file": "runs/p4_hierarchical_tree/fewrel_5shot/seed_2021/router_confusion_matrix.json"
       }
+    },
+    {
+      "id": "E013",
+      "title": "Proposed Method P4 on TACRED Track A: Frozen BERT + TAPTA Hierarchical Prompt Tree & Decision Fusion",
+      "method": "p4_hierarchical_tree_tacred",
+      "baseline_role": "proposed_hierarchical_tree_tacred",
+      "execution_mode": "google_colab_gpu",
+      "note": "Proposed method P4 (TAPTA) on second benchmark TACRED Track A: 100% frozen BERT with 2-tier Hierarchical Prompt Tree (L_root=4, L_leaf=4), Sub-Centroid Task Router, and Decision-Level Soft Prototype Fusion (Zero Oracle Task ID, rehearsal-free M=0).",
+      "status": "completed_real",
+      "date": "2026-11-25",
+      "benchmark": {
+        "dataset": "TACRED Track A",
+        "num_tasks": 8,
+        "relations_per_task": 5,
+        "total_relations": 41,
+        "train_shot": 5,
+        "test_shot": 100,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "cuda"
+      },
+      "purity_boundary": {
+        "backbone_frozen": true,
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "latent_replay": false,
+        "prototypes_enabled": true,
+        "tree_hierarchy_enabled": true,
+        "prompt_tuning_enabled": true,
+        "routing_network_enabled": true,
+        "decision_level_fusion": true,
+        "knowledge_distillation_enabled": false,
+        "regularizers": [
+          "prompt_orthogonality",
+          "root_prompt_freezing"
+        ]
+      },
+      "results": {
+        "decision_fusion_accuracy_whole": 0.424514,
+        "decision_fusion_topk_gated_accuracy_whole": 0.417481,
+        "tree_top1_prototype_accuracy_whole": 0.418452,
+        "tree_top1_gated_prototype_accuracy_whole": 0.414949,
+        "tree_topk_gated_prototype_accuracy_whole": 0.414973,
+        "router_top1_accuracy_whole": 0.498722,
+        "router_topk_coverage_whole": 0.695701,
+        "router_top1_average_incremental_accuracy": 0.711057,
+        "router_topk_average_incremental_accuracy": 0.858404,
+        "average_incremental_accuracy": 0.634596,
+        "average_forgetting": 0.145534,
+        "backward_transfer": -0.145534,
+        "total_duration_seconds": 167.32
+      },
+      "artifacts": {
+        "config_path": "configs/p4_hierarchical_prompt_tree_tacred_5shot_seed2021.yaml",
+        "results_dir": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021",
+        "metrics_file": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021/metrics.json",
+        "summary_file": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021/summary.json",
+        "matrix_csv": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021/performance_matrix.csv",
+        "confusion_matrix_file": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021/router_confusion_matrix.json"
+      }
     }
   ]
 }
