@@ -367,7 +367,7 @@ def run_experiment(
     dataset_name = dataset_cfg.get("name", "tacred")
     num_tasks = int(dataset_cfg.get("num_tasks", 8))
     relations_per_task = int(dataset_cfg.get("relations_per_task", 5 if dataset_name == "tacred" else 10))
-    total_relations = int(dataset_cfg.get("total_relations", 40 if dataset_name == "tacred" else 80))
+    total_relations = int(dataset_cfg.get("total_relations", 41 if dataset_name == "tacred" else 80))
 
     device = device_override if device_override is not None else (
         "cuda" if torch.cuda.is_available() else ("mps" if hasattr(torch.backends, "mps") and torch.backends.mps.is_available() else "cpu")
