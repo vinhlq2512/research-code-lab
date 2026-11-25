@@ -239,6 +239,7 @@ def evaluate_p5_task(
     config: dict[str, Any],
     mode: str = "p5_full",
     batch_size: int = 64,
+    task_class_indices: list[list[int]] | None = None,
 ) -> dict[str, Any]:
     """Evaluate task using Confidence-Gated Candidate Masking and monitor diagnostics."""
     model.eval()
@@ -314,6 +315,7 @@ def evaluate_p5_task(
                 relations_per_task=relations_per_task,
                 confidence_margin_threshold=conf_thresh,
                 temperature=temperature,
+                task_class_indices=task_class_indices,
             )
         else:
             final_p5_sim = soft_fused_sim
@@ -432,7 +434,7 @@ def run_experiment(
     for stage in range(num_tasks):
         t_stage = tasks[stage]
         seen_tasks = stage + 1
-        seen_classes = seen_tasks * relations_per_task
+        seen_classes = sum(len(tasks[k].class_indices) for k in range(stage + 1))
         model.set_seen_classes(seen_classes)
 
         print(f"\n>>> Stage {seen_tasks}/{num_tasks}: Learning Task {seen_tasks} (Cluster {t_stage.cluster_id}, Seen Classes: {seen_classes})")
@@ -458,6 +460,7 @@ def run_experiment(
                 config=config,
                 mode=mode,
                 batch_size=int(config.get("evaluation", {}).get("batch_size", 64)),
+                task_class_indices=[t.class_indices for t in tasks],
             )
 
             p5_matrix.set_score(trained_until=stage, evaluated_task=j, score=eval_res["p5_accuracy"])

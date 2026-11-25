@@ -99,6 +99,7 @@ class P5PromptedBERT(PromptedBERTRelationClassifier):
         relations_per_task: int = 10,
         confidence_margin_threshold: float = 0.05,
         temperature: float = 0.2,
+        task_class_indices: list[list[int]] | None = None,
     ) -> torch.Tensor:
         """Module C: Confidence-Gated Candidate Masking.
 
@@ -123,23 +124,31 @@ class P5PromptedBERT(PromptedBERTRelationClassifier):
             t2 = int(t2_indices[b].item())
             m = float(margins[b].item())
 
-            c1_start = t1 * relations_per_task
-            c1_end = min(c1_start + relations_per_task, self.seen_classes)
+            if task_class_indices is not None and t1 < len(task_class_indices):
+                c1_idx = task_class_indices[t1]
+            else:
+                c1_start = t1 * relations_per_task
+                c1_end = min(c1_start + relations_per_task, self.seen_classes)
+                c1_idx = list(range(c1_start, c1_end))
 
             if m >= confidence_margin_threshold or t1 == t2:
                 # Confident: Hard Top-1 Gated to t1 relations only
                 sim_0 = candidate_sims[0][b]  # [num_classes]
-                gated_sim[b, c1_start:c1_end] = sim_0[c1_start:c1_end]
+                gated_sim[b, c1_idx] = sim_0[c1_idx]
             else:
                 # Uncertain: Candidate Gated to {t1, t2} relations
-                c2_start = t2 * relations_per_task
-                c2_end = min(c2_start + relations_per_task, self.seen_classes)
+                if task_class_indices is not None and t2 < len(task_class_indices):
+                    c2_idx = task_class_indices[t2]
+                else:
+                    c2_start = t2 * relations_per_task
+                    c2_end = min(c2_start + relations_per_task, self.seen_classes)
+                    c2_idx = list(range(c2_start, c2_end))
 
                 # Soft blend weights for {t1, t2}
                 weights = F.softmax(torch.tensor([s1[b], s2[b]], device=device) / max(temperature, 1e-4), dim=-1)
                 fused = weights[0] * candidate_sims[0][b] + weights[1] * candidate_sims[1][b]
 
-                gated_sim[b, c1_start:c1_end] = fused[c1_start:c1_end]
-                gated_sim[b, c2_start:c2_end] = fused[c2_start:c2_end]
+                gated_sim[b, c1_idx] = fused[c1_idx]
+                gated_sim[b, c2_idx] = fused[c2_idx]
 
         return gated_sim
