@@ -645,6 +645,7 @@ def run_experiment(
                 "seen_classes": seen_classes,
                 "top_k": router_cfg.get("top_k", 2),
             },
+            router=router,
         )
         print(f"  Stage {seen_tasks} completed in {time.time() - stage_t0:.2f}s.")
 
@@ -661,9 +662,15 @@ def run_experiment(
     router_topk_summary = compute_continual_summary_metrics(router_topk_matrix)
     linear_summary = compute_continual_summary_metrics(linear_matrix)
 
-    ref_p0 = float(continual_cfg.get("reference_p0_proto_acc", 0.52825))
-    ref_p1 = float(continual_cfg.get("reference_p1_proto_acc", 0.701375))
-    ref_p2a = float(continual_cfg.get("reference_p2a_proto_acc", 0.59275))
+    dataset_name = config.get("dataset", {}).get("name", "fewrel")
+    if dataset_name == "tacred":
+        ref_p0 = float(continual_cfg.get("reference_p0_proto_acc", 0.380))
+        ref_p1 = float(continual_cfg.get("reference_p1_proto_acc", 0.580))
+        ref_p2a = float(continual_cfg.get("reference_p2a_proto_acc", 0.400))
+    else:
+        ref_p0 = float(continual_cfg.get("reference_p0_proto_acc", 0.52825))
+        ref_p1 = float(continual_cfg.get("reference_p1_proto_acc", 0.701375))
+        ref_p2a = float(continual_cfg.get("reference_p2a_proto_acc", 0.59275))
     oracle_span = max(1e-6, ref_p1 - ref_p0)
 
     final_fusion_acc = fusion_summary["final_average_accuracy"]

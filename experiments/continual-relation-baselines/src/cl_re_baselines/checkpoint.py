@@ -29,8 +29,9 @@ class CheckpointManager:
         stage: int,
         model: Any,
         metadata: dict[str, Any] | None = None,
+        router: Any | None = None,
     ) -> Path:
-        """Save model checkpoint and stage metadata."""
+        """Save model checkpoint, router state, and stage metadata."""
         stage_dir = self.get_stage_dir(stage)
         meta_file = stage_dir / "stage_metadata.json"
 
@@ -42,9 +43,14 @@ class CheckpointManager:
             json.dump(meta, f, indent=2)
 
         # Save model weights
+        state = None
         if hasattr(model, "get_state_dict"):
             state = model.get_state_dict()
-            if HAS_TORCH and any(isinstance(v, (torch.Tensor, dict)) for v in state.values()):
+        elif hasattr(model, "state_dict"):
+            state = model.state_dict()
+
+        if state is not None:
+            if HAS_TORCH and (isinstance(state, dict) or isinstance(state, torch.Tensor)):
                 torch_file = stage_dir / "model.pt"
                 torch.save(state, torch_file)
             else:
@@ -52,10 +58,25 @@ class CheckpointManager:
                 with json_file.open("w", encoding="utf-8") as f:
                     json.dump(state, f, indent=2)
 
+        # Save router state if provided
+        if router is not None and HAS_TORCH:
+            router_state = None
+            if hasattr(router, "state_dict"):
+                router_state = router.state_dict()
+            elif hasattr(router, "get_state_dict"):
+                router_state = router.get_state_dict()
+            if router_state is not None:
+                torch.save(router_state, stage_dir / "router.pt")
+
         return stage_dir
 
-    def load_checkpoint(self, stage: int, model: Any) -> dict[str, Any]:
-        """Load model state and return stage metadata."""
+    def load_checkpoint(
+        self,
+        stage: int,
+        model: Any,
+        router: Any | None = None,
+    ) -> dict[str, Any]:
+        """Load model state, router state, and return stage metadata."""
         stage_dir = self.get_stage_dir(stage)
         meta_file = stage_dir / "stage_metadata.json"
         meta: dict[str, Any] = {}
@@ -74,7 +95,13 @@ class CheckpointManager:
         elif json_file.exists():
             with json_file.open("r", encoding="utf-8") as f:
                 state = json.load(f)
-            if hasattr(model, "load_state_dict"):
-                model.load_state_dict(state)
+                if hasattr(model, "load_state_dict"):
+                    model.load_state_dict(state)
+
+        router_file = stage_dir / "router.pt"
+        if router is not None and router_file.exists() and HAS_TORCH:
+            r_state = torch.load(router_file, map_location="cpu")
+            if hasattr(router, "load_state_dict"):
+                router.load_state_dict(r_state)
 
         return meta
