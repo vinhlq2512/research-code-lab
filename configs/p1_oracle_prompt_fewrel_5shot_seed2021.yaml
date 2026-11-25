@@ -1,0 +1,65 @@
+# ==============================================================================
+# P1 — Oracle-Task Soft Prompt Baseline (Upper Bound for TAPTA)
+# Protocol: Protocol v1 Track A (FewRel 8 tasks × 10 relations, 5-shot)
+# Architecture: 100% Frozen BERT-base + Pool of 8 Task Prompts (L=8) + Oracle Task Routing
+# Memory Setting: M=0 (Rehearsal-Free / Raw-data-free)
+# ==============================================================================
+
+experiment:
+  id: "P1"
+  name: "p1_oracle_prompt"
+  registry_id: "E008"
+  baseline_role: "upper_bound_prompt"
+  description: "Proposed Method Foundation P1: Frozen BERT with task-dedicated prompt pool evaluated with Oracle Task ID routing (ideal upper bound of prompt architecture)"
+
+dataset:
+  name: "fewrel"
+  track: "A"
+  num_tasks: 8
+  relations_per_task: 10
+  total_relations: 80
+  train_shot: 5
+  test_shot: 100
+  base_dir: "data/protocol_v1/fewrel"
+  split_subdir: "CFRLdata_10_100_10_5"
+  task_order_strategy: "conpl_seed_shuffle"
+
+seed: 2021
+
+model:
+  backbone: "bert-base-uncased"
+  prompt_mode: "oracle_pool"
+  prompt_length: 8
+  max_seq_length: 128
+  num_classes: 80
+  classifier_dropout: 0.1
+  freeze_backbone: true
+
+continual:
+  method: "p1_oracle_prompt"
+  memory_size: 0
+  task_oracle_inference: true
+
+training:
+  learning_rate: 1.0e-3
+  weight_decay: 0.01
+  batch_size: 16
+  epochs_per_task: 15
+  warmup_ratio: 0.1
+  optimizer: "AdamW"
+  gradient_clip_norm: 1.0
+  device: "auto"
+
+evaluation:
+  batch_size: 64
+  evaluate_seen_tasks: true
+  save_per_task_metrics: true
+  primary_metric: "accuracy"
+
+output:
+  results_dir: "runs/p1_oracle_prompt/fewrel_5shot/seed_2021"
+  metrics_file: "metrics.json"
+  summary_file: "summary.json"
+  matrix_csv: "performance_matrix.csv"
+  matrix_json: "performance_matrix.json"
+  conclusion_file: "conclusion.md"

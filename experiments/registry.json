@@ -292,6 +292,376 @@
         "audit_doc_path": "docs/reproductions/wave-b5-audit-2026-11-14.md",
         "runs_dir": "runs/wave_cre/fewrel_author_config/seed_2021"
       }
+    },
+    {
+      "id": "E007",
+      "title": "Proposed Method Foundation P0: Frozen BERT + Shared Soft Prompt (Lower Bound)",
+      "method": "p0_shared_prompt",
+      "baseline_role": "lower_bound_prompt",
+      "execution_mode": "real_bert_mps",
+      "note": "Proposed method lower-bound baseline: 100% frozen BERT with a single shared soft prompt across all tasks without routing (rehearsal-free M=0).",
+      "status": "completed_real",
+      "date": "2026-11-15",
+      "benchmark": {
+        "dataset": "FewRel Track A",
+        "num_tasks": 8,
+        "relations_per_task": 10,
+        "total_relations": 80,
+        "train_shot": 5,
+        "test_shot": 100,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "mps"
+      },
+      "purity_boundary": {
+        "backbone_frozen": true,
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "latent_replay": false,
+        "prototypes_enabled": true,
+        "tree_hierarchy_enabled": false,
+        "prompt_tuning_enabled": true,
+        "routing_network_enabled": false,
+        "knowledge_distillation_enabled": false,
+        "regularizers": []
+      },
+      "results": {
+        "final_average_accuracy": 0.098375,
+        "average_incremental_accuracy": 0.29444657738095237,
+        "average_forgetting": 0.8654285714285714,
+        "backward_transfer": -0.8654285714285714,
+        "prototype_accuracy_whole": 0.52825,
+        "til_accuracy_whole": 0.82725
+      },
+      "artifacts": {
+        "config_path": "configs/p0_shared_prompt_fewrel_5shot_seed2021.yaml",
+        "results_dir": "runs/p0_shared_prompt/fewrel_5shot/seed_2021",
+        "metrics_file": "runs/p0_shared_prompt/fewrel_5shot/seed_2021/metrics.json"
+      }
+    },
+    {
+      "id": "E008",
+      "title": "Proposed Method Foundation P1: Frozen BERT + Oracle-Task Soft Prompt Pool (Upper Bound)",
+      "method": "p1_oracle_prompt",
+      "baseline_role": "upper_bound_prompt",
+      "execution_mode": "real_bert_mps",
+      "note": "Proposed method upper-bound baseline: 100% frozen BERT with task-dedicated prompt pool evaluated via Oracle Task ID routing (rehearsal-free M=0).",
+      "status": "completed_real",
+      "date": "2026-11-15",
+      "benchmark": {
+        "dataset": "FewRel Track A",
+        "num_tasks": 8,
+        "relations_per_task": 10,
+        "total_relations": 80,
+        "train_shot": 5,
+        "test_shot": 100,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "mps"
+      },
+      "purity_boundary": {
+        "backbone_frozen": true,
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "latent_replay": false,
+        "prototypes_enabled": true,
+        "tree_hierarchy_enabled": false,
+        "prompt_tuning_enabled": true,
+        "routing_network_enabled": true,
+        "knowledge_distillation_enabled": false,
+        "regularizers": []
+      },
+      "results": {
+        "final_average_accuracy": 0.098375,
+        "average_incremental_accuracy": 0.29916086309523804,
+        "average_forgetting": 0.8571428571428571,
+        "backward_transfer": -0.8571428571428571,
+        "prototype_accuracy_whole": 0.701375,
+        "til_accuracy_whole": 0.8275
+      },
+      "artifacts": {
+        "config_path": "configs/p1_oracle_prompt_fewrel_5shot_seed2021.yaml",
+        "results_dir": "runs/p1_oracle_prompt/fewrel_5shot/seed_2021",
+        "metrics_file": "runs/p1_oracle_prompt/fewrel_5shot/seed_2021/metrics.json"
+      }
+    },
+    {
+      "id": "E009",
+      "title": "Proposed Method P2a: Frozen BERT + Task-Routed Soft Prompt Pool via Centroid Cosine Router",
+      "method": "p2a_centroid_router",
+      "baseline_role": "proposed_centroid_router",
+      "execution_mode": "google_colab_gpu",
+      "note": "Proposed method P2a: 100% frozen BERT with task-dedicated prompt pool routed at test time via training-free Cosine Centroid & Relation Sub-Centroid similarity (Zero Oracle Task ID, rehearsal-free M=0).",
+      "status": "completed_real",
+      "date": "2026-11-21",
+      "benchmark": {
+        "dataset": "FewRel Track A",
+        "num_tasks": 8,
+        "relations_per_task": 10,
+        "total_relations": 80,
+        "train_shot": 5,
+        "test_shot": 100,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "cuda"
+      },
+      "purity_boundary": {
+        "backbone_frozen": true,
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "latent_replay": false,
+        "prototypes_enabled": true,
+        "tree_hierarchy_enabled": false,
+        "prompt_tuning_enabled": true,
+        "routing_network_enabled": true,
+        "knowledge_distillation_enabled": false,
+        "regularizers": []
+      },
+      "results": {
+        "prototype_accuracy_whole": 0.59275,
+        "routed_prototype_accuracy_whole": 0.5935,
+        "router_accuracy_whole": 0.646875,
+        "router_average_incremental_accuracy": 0.7822543154761905,
+        "average_incremental_accuracy": 0.6971494047619048,
+        "average_forgetting": 0.11914285714285715,
+        "backward_transfer": -0.11914285714285715,
+        "oracle_gap_closed_pct": 37.69
+      },
+      "artifacts": {
+        "config_path": "configs/p2a_centroid_router_fewrel_5shot_seed2021.yaml",
+        "results_dir": "runs/p2a_centroid_router/fewrel_5shot/seed_2021",
+        "metrics_file": "runs/p2a_centroid_router/fewrel_5shot/seed_2021/metrics.json",
+        "confusion_matrix_file": "runs/p2a_centroid_router/fewrel_5shot/seed_2021/router_confusion_matrix.json"
+      }
+    },
+    {
+      "id": "E010",
+      "title": "Proposed Method P2b: Frozen BERT + Task-Routed Soft Prompt Pool via Learned MLP Cosine Router",
+      "method": "p2b_learned_router",
+      "baseline_role": "proposed_learned_router",
+      "execution_mode": "google_colab_gpu",
+      "note": "Proposed method P2b: 100% frozen BERT with task-dedicated prompt pool routed at test time via a 2-layer MLP Cosine Router trained with stationary frozen-space Gaussian feature statistics (Zero Oracle Task ID, rehearsal-free M=0).",
+      "status": "completed_real",
+      "date": "2026-11-21",
+      "benchmark": {
+        "dataset": "FewRel Track A",
+        "num_tasks": 8,
+        "relations_per_task": 10,
+        "total_relations": 80,
+        "train_shot": 5,
+        "test_shot": 100,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "cuda"
+      },
+      "purity_boundary": {
+        "backbone_frozen": true,
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "latent_replay": true,
+        "prototypes_enabled": true,
+        "tree_hierarchy_enabled": false,
+        "prompt_tuning_enabled": true,
+        "routing_network_enabled": true,
+        "knowledge_distillation_enabled": false,
+        "regularizers": []
+      },
+      "results": {
+        "prototype_accuracy_whole": 0.560375,
+        "routed_prototype_accuracy_whole": 0.4625,
+        "router_accuracy_whole": 0.5085,
+        "router_average_incremental_accuracy": 0.6774639880952381,
+        "average_incremental_accuracy": 0.6744668154761905,
+        "average_forgetting": 0.14514285714285716,
+        "backward_transfer": -0.14514285714285716,
+        "oracle_gap_closed_pct": 18.56
+      },
+      "artifacts": {
+        "config_path": "configs/p2b_learned_router_fewrel_5shot_seed2021.yaml",
+        "results_dir": "runs/p2b_learned_router/fewrel_5shot/seed_2021",
+        "metrics_file": "runs/p2b_learned_router/fewrel_5shot/seed_2021/metrics.json",
+        "confusion_matrix_file": "runs/p2b_learned_router/fewrel_5shot/seed_2021/router_confusion_matrix.json"
+      }
+    },
+    {
+      "id": "E011",
+      "title": "Proposed Method P3: Frozen BERT + Soft Top-K Composed Prompt Pool Router",
+      "method": "p3_soft_router",
+      "baseline_role": "proposed_soft_router",
+      "execution_mode": "google_colab_gpu",
+      "note": "Proposed method P3 (TAPTA Minimal): 100% frozen BERT with Soft Top-K Prompt Composition Router (K=2, tau=0.2) and Prompt Orthogonality Regularization (Zero Oracle Task ID, rehearsal-free M=0).",
+      "status": "completed_real",
+      "date": "2026-11-21",
+      "benchmark": {
+        "dataset": "FewRel Track A",
+        "num_tasks": 8,
+        "relations_per_task": 10,
+        "total_relations": 80,
+        "train_shot": 5,
+        "test_shot": 100,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "cuda"
+      },
+      "purity_boundary": {
+        "backbone_frozen": true,
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "latent_replay": false,
+        "prototypes_enabled": true,
+        "tree_hierarchy_enabled": false,
+        "prompt_tuning_enabled": true,
+        "routing_network_enabled": true,
+        "soft_prompt_composition": true,
+        "knowledge_distillation_enabled": false,
+        "regularizers": [
+          "prompt_orthogonality"
+        ]
+      },
+      "results": {
+        "prototype_accuracy_whole": 0.555,
+        "topk_gated_prototype_accuracy_whole": 0.562625,
+        "top1_gated_prototype_accuracy_whole": 0.5925,
+        "router_top1_accuracy_whole": 0.646875,
+        "router_topk_coverage_whole": 0.814125,
+        "router_top1_average_incremental_accuracy": 0.782254,
+        "router_topk_average_incremental_accuracy": 0.905764,
+        "average_incremental_accuracy": 0.668375,
+        "average_forgetting": 0.151286,
+        "backward_transfer": -0.151286,
+        "oracle_gap_closed_pct": 19.86
+      },
+      "artifacts": {
+        "config_path": "configs/p3_soft_router_fewrel_5shot_seed2021.yaml",
+        "results_dir": "runs/p3_soft_router/fewrel_5shot/seed_2021",
+        "metrics_file": "runs/p3_soft_router/fewrel_5shot/seed_2021/metrics.json",
+        "confusion_matrix_file": "runs/p3_soft_router/fewrel_5shot/seed_2021/router_confusion_matrix.json"
+      }
+    },
+    {
+      "id": "E012",
+      "title": "Proposed Method P4: Frozen BERT + TAPTA Hierarchical Prompt Tree & Decision Fusion",
+      "method": "p4_hierarchical_tree",
+      "baseline_role": "proposed_hierarchical_tree",
+      "execution_mode": "google_colab_gpu",
+      "note": "Proposed method P4 (TAPTA Full): 100% frozen BERT with 2-tier Hierarchical Prompt Tree (L_root=4, L_leaf=4), Sub-Centroid Task Router, and Decision-Level Soft Prototype Fusion (Zero Oracle Task ID, rehearsal-free M=0).",
+      "status": "completed_real",
+      "date": "2026-11-24",
+      "benchmark": {
+        "dataset": "FewRel Track A",
+        "num_tasks": 8,
+        "relations_per_task": 10,
+        "total_relations": 80,
+        "train_shot": 5,
+        "test_shot": 100,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "cuda"
+      },
+      "purity_boundary": {
+        "backbone_frozen": true,
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "latent_replay": false,
+        "prototypes_enabled": true,
+        "tree_hierarchy_enabled": true,
+        "prompt_tuning_enabled": true,
+        "routing_network_enabled": true,
+        "decision_level_fusion": true,
+        "knowledge_distillation_enabled": false,
+        "regularizers": [
+          "prompt_orthogonality",
+          "root_prompt_freezing"
+        ]
+      },
+      "results": {
+        "decision_fusion_accuracy_whole": 0.57575,
+        "decision_fusion_topk_gated_accuracy_whole": 0.57925,
+        "tree_top1_prototype_accuracy_whole": 0.58375,
+        "tree_top1_gated_prototype_accuracy_whole": 0.588,
+        "tree_topk_gated_prototype_accuracy_whole": 0.58825,
+        "router_top1_accuracy_whole": 0.646875,
+        "router_topk_coverage_whole": 0.814125,
+        "router_top1_average_incremental_accuracy": 0.782254,
+        "router_topk_average_incremental_accuracy": 0.905764,
+        "average_incremental_accuracy": 0.688559,
+        "average_forgetting": 0.118857,
+        "backward_transfer": -0.118857,
+        "oracle_gap_closed_pct": 34.51
+      },
+      "artifacts": {
+        "config_path": "configs/p4_hierarchical_prompt_tree_fewrel_5shot_seed2021.yaml",
+        "results_dir": "runs/p4_hierarchical_tree/fewrel_5shot/seed_2021",
+        "metrics_file": "runs/p4_hierarchical_tree/fewrel_5shot/seed_2021/metrics.json",
+        "confusion_matrix_file": "runs/p4_hierarchical_tree/fewrel_5shot/seed_2021/router_confusion_matrix.json"
+      }
+    },
+    {
+      "id": "E013",
+      "title": "Proposed Method P4 on TACRED Track A: Frozen BERT + TAPTA Hierarchical Prompt Tree & Decision Fusion",
+      "method": "p4_hierarchical_tree_tacred",
+      "baseline_role": "proposed_hierarchical_tree_tacred",
+      "execution_mode": "google_colab_gpu",
+      "note": "Proposed method P4 (TAPTA) on second benchmark TACRED Track A: 100% frozen BERT with 2-tier Hierarchical Prompt Tree (L_root=4, L_leaf=4), Sub-Centroid Task Router, and Decision-Level Soft Prototype Fusion (Zero Oracle Task ID, rehearsal-free M=0).",
+      "status": "completed_real",
+      "date": "2026-11-25",
+      "benchmark": {
+        "dataset": "TACRED Track A",
+        "num_tasks": 8,
+        "relations_per_task": 5,
+        "total_relations": 41,
+        "train_shot": 5,
+        "test_shot": 100,
+        "seed": 2021,
+        "backbone": "bert-base-uncased",
+        "max_seq_length": 128,
+        "device": "cuda"
+      },
+      "purity_boundary": {
+        "backbone_frozen": true,
+        "memory_budget": 0,
+        "replay_buffer": false,
+        "latent_replay": false,
+        "prototypes_enabled": true,
+        "tree_hierarchy_enabled": true,
+        "prompt_tuning_enabled": true,
+        "routing_network_enabled": true,
+        "decision_level_fusion": true,
+        "knowledge_distillation_enabled": false,
+        "regularizers": [
+          "prompt_orthogonality",
+          "root_prompt_freezing"
+        ]
+      },
+      "results": {
+        "decision_fusion_accuracy_whole": 0.424514,
+        "decision_fusion_topk_gated_accuracy_whole": 0.417481,
+        "tree_top1_prototype_accuracy_whole": 0.418452,
+        "tree_top1_gated_prototype_accuracy_whole": 0.414949,
+        "tree_topk_gated_prototype_accuracy_whole": 0.414973,
+        "router_top1_accuracy_whole": 0.498722,
+        "router_topk_coverage_whole": 0.695701,
+        "router_top1_average_incremental_accuracy": 0.711057,
+        "router_topk_average_incremental_accuracy": 0.858404,
+        "average_incremental_accuracy": 0.634596,
+        "average_forgetting": 0.145534,
+        "backward_transfer": -0.145534,
+        "total_duration_seconds": 167.32
+      },
+      "artifacts": {
+        "config_path": "configs/p4_hierarchical_prompt_tree_tacred_5shot_seed2021.yaml",
+        "results_dir": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021",
+        "metrics_file": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021/metrics.json",
+        "summary_file": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021/summary.json",
+        "matrix_csv": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021/performance_matrix.csv",
+        "confusion_matrix_file": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021/router_confusion_matrix.json"
+      }
     }
   ]
 }

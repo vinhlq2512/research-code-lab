@@ -1,0 +1,78 @@
+# ==============================================================================
+# P2b — Lightweight Learned MLP Cosine Task Router (Stationary Feature Replay M=0)
+# Protocol: Protocol v1 Track A (FewRel 8 tasks × 10 relations, 5-shot)
+# Architecture: 100% Frozen BERT-base + Pool of 8 Task Prompts (L=8) + Learned MLP Cosine Router
+# Memory Setting: M=0 (Rehearsal-Free / Raw-data-free)
+# Compute Target: Google Colab (NVIDIA GPU CUDA)
+# ==============================================================================
+
+experiment:
+  id: "P2b"
+  name: "p2b_learned_router"
+  registry_id: "E010"
+  baseline_role: "proposed_learned_router"
+  description: "Proposed Method P2b: Frozen BERT with task-dedicated prompt pool routed at test time via a 2-layer MLP Cosine Router trained with stationary frozen-space Gaussian feature statistics (Zero Oracle Task ID, M=0)"
+
+dataset:
+  name: "fewrel"
+  track: "A"
+  num_tasks: 8
+  relations_per_task: 10
+  total_relations: 80
+  train_shot: 5
+  test_shot: 100
+  base_dir: "data/protocol_v1/fewrel"
+  split_subdir: "CFRLdata_10_100_10_5"
+  task_order_strategy: "conpl_seed_shuffle"
+
+seed: 2021
+
+model:
+  backbone: "bert-base-uncased"
+  prompt_mode: "routed_pool"
+  prompt_length: 8
+  max_seq_length: 128
+  num_classes: 80
+  classifier_dropout: 0.1
+  freeze_backbone: true
+
+router:
+  type: "learned_mlp"
+  subcentroid_weight: 0.7
+  hidden_dim: 512
+  temperature: 16.0
+  residual_anchor_weight: 0.5
+  router_epochs: 30
+  router_lr: 2.0e-3
+  synthetic_samples_per_rel: 12
+
+continual:
+  method: "p2b_learned_router"
+  memory_size: 0
+  task_oracle_inference: false
+  reference_p0_proto_acc: 0.52825
+  reference_p1_proto_acc: 0.701375
+
+training:
+  learning_rate: 1.0e-3
+  weight_decay: 0.01
+  batch_size: 16
+  epochs_per_task: 15
+  warmup_ratio: 0.1
+  optimizer: "AdamW"
+  gradient_clip_norm: 1.0
+  device: "cuda"
+
+evaluation:
+  batch_size: 64
+  evaluate_seen_tasks: true
+  save_per_task_metrics: true
+  primary_metric: "prototype_accuracy"
+
+output:
+  results_dir: "runs/p2b_learned_router/fewrel_5shot/seed_2021"
+  metrics_file: "metrics.json"
+  summary_file: "summary.json"
+  matrix_csv: "performance_matrix.csv"
+  matrix_json: "performance_matrix.json"
+  conclusion_file: "conclusion.md"

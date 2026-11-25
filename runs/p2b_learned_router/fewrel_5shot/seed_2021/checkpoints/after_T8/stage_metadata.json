@@ -1,0 +1,8 @@
+{
+  "task_id": 7,
+  "cluster_id": 6,
+  "seen_classes": 80,
+  "router_type": "learned_mlp",
+  "stage": 7,
+  "task_name": "T8"
+}

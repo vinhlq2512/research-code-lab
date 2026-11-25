@@ -1,0 +1,8 @@
+[02:23:26] [INFO] HTTP Request: GET https://huggingface.co/api/models/bert-base-uncased "HTTP/1.1 307 Temporary Redirect"
+[02:23:26] [INFO] HTTP Request: GET https://huggingface.co/api/models/google-bert/bert-base-uncased "HTTP/1.1 200 OK"
+[02:23:26] [INFO] HTTP Request: GET https://huggingface.co/api/models/bert-base-uncased/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 307 Temporary Redirect"
+[02:23:26] [INFO] HTTP Request: GET https://huggingface.co/api/models/google-bert/bert-base-uncased/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+[02:23:27] [INFO] HTTP Request: GET https://huggingface.co/api/models/bert-base-uncased/tree/main?recursive=true&expand=false "HTTP/1.1 307 Temporary Redirect"
+[02:23:27] [INFO] HTTP Request: GET https://huggingface.co/api/models/google-bert/bert-base-uncased/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+[02:23:27] [INFO] HTTP Request: GET https://huggingface.co/api/models/bert-base-uncased "HTTP/1.1 307 Temporary Redirect"
+[02:23:27] [INFO] HTTP Request: GET https://huggingface.co/api/models/google-bert/bert-base-uncased "HTTP/1.1 200 OK"

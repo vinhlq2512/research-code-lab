@@ -1,0 +1,84 @@
+{
+  "final_average_accuracy": 0.560375,
+  "average_incremental_accuracy": 0.6744668154761905,
+  "average_forgetting": 0.14514285714285716,
+  "backward_transfer": -0.14514285714285716,
+  "most_forgotten_task": {
+    "task_id": 2,
+    "task_name": "T3",
+    "forgetting": 0.24899999999999994,
+    "initial_score": 0.706,
+    "final_score": 0.457
+  },
+  "per_task_forgetting": {
+    "task_0": 0.22299999999999998,
+    "task_1": 0.21899999999999997,
+    "task_2": 0.24899999999999994,
+    "task_3": 0.05900000000000005,
+    "task_4": 0.10999999999999999,
+    "task_5": 0.10799999999999998,
+    "task_6": 0.04800000000000004,
+    "task_7": 0.0
+  },
+  "old_vs_new_by_stage": {
+    "stage_1": {
+      "old_acc": 0.8,
+      "new_acc": 0.716
+    },
+    "stage_2": {
+      "old_acc": 0.6930000000000001,
+      "new_acc": 0.706
+    },
+    "stage_3": {
+      "old_acc": 0.658,
+      "new_acc": 0.633
+    },
+    "stage_4": {
+      "old_acc": 0.6225,
+      "new_acc": 0.659
+    },
+    "stage_5": {
+      "old_acc": 0.6042,
+      "new_acc": 0.779
+    },
+    "stage_6": {
+      "old_acc": 0.5953333333333334,
+      "new_acc": 0.615
+    },
+    "stage_7": {
+      "old_acc": 0.5655714285714286,
+      "new_acc": 0.524
+    }
+  },
+  "incremental_accuracy": {
+    "T1": 0.867,
+    "T2": 0.758,
+    "T3": 0.6973333333333334,
+    "T4": 0.65175,
+    "T5": 0.6298,
+    "T6": 0.6333333333333333,
+    "T7": 0.5981428571428572,
+    "T8": 0.560375
+  },
+  "average_accuracy_by_stage": [
+    0.867,
+    0.758,
+    0.6973333333333334,
+    0.65175,
+    0.6298,
+    0.6333333333333333,
+    0.5981428571428572,
+    0.560375
+  ],
+  "evaluated_stage": 7,
+  "final_prototype_accuracy": 0.560375,
+  "final_routed_prototype_accuracy": 0.4625,
+  "final_router_accuracy": 0.5085000000000001,
+  "router_average_incremental_accuracy": 0.6774639880952381,
+  "oracle_gap_closed_pct": 18.56,
+  "experiment": "P2b",
+  "method": "p2b_learned_router",
+  "router_type": "learned_mlp",
+  "seed": 2021,
+  "total_duration_seconds": 277.35
+}

@@ -1,0 +1,77 @@
+# ==============================================================================
+# P4 — Hierarchical Prompt Tree & Decision Fusion on TACRED Track A
+# Protocol: Protocol v1 Track A (TACRED 8 tasks × 5 relations, 5-shot)
+# Architecture: 100% Frozen BERT-base + Hierarchical Prompt Tree (L_root=4, L_leaf=4)
+# Memory Setting: M=0 (Rehearsal-Free / Raw-data-free)
+# Inference: Two-Tier Hierarchical Inference with Decision-Level Soft Fusion
+# Compute Target: Google Colab (NVIDIA GPU CUDA)
+# ==============================================================================
+
+experiment:
+  id: "P4_TACRED"
+  name: "p4_hierarchical_tree_tacred"
+  registry_id: "E013"
+  baseline_role: "proposed_hierarchical_tree_tacred"
+  description: "Proposed Method P4 (TAPTA Hierarchical Tree) on TACRED Track A: Frozen BERT with 2-tier Hierarchical Prompt Tree (L_root=4, L_leaf=4), Sub-Centroid Task Routing, and Decision-Level Soft Prototype Fusion (Zero Oracle Task ID)"
+
+dataset:
+  name: "tacred"
+  track: "A"
+  num_tasks: 8
+  relations_per_task: 5
+  total_relations: 41
+  train_shot: 5
+  test_shot: 100
+  base_dir: "data/protocol_v1/tacred"
+  split_subdir: "CFRLdata_10_100_10_5"
+  task_order_strategy: "conpl_seed_shuffle"
+
+seed: 2021
+
+model:
+  backbone: "bert-base-uncased"
+  prompt_mode: "hierarchical_tree"
+  prompt_length: 8
+  root_prompt_length: 4
+  leaf_prompt_length: 4
+  max_seq_length: 128
+  num_classes: 41
+  classifier_dropout: 0.1
+  freeze_backbone: true
+  freeze_root_after_task0: true
+
+router:
+  type: "centroid"
+  subcentroid_weight: 0.7
+  top_k: 2
+  temperature: 0.2
+
+continual:
+  method: "p4_hierarchical_tree"
+  memory_size: 0
+  task_oracle_inference: false
+
+training:
+  learning_rate: 1.0e-3
+  weight_decay: 0.01
+  batch_size: 16
+  epochs_per_task: 15
+  warmup_ratio: 0.1
+  orthogonality_lambda: 0.05
+  optimizer: "AdamW"
+  gradient_clip_norm: 1.0
+  device: "cuda"
+
+evaluation:
+  batch_size: 64
+  evaluate_seen_tasks: true
+  save_per_task_metrics: true
+  primary_metric: "decision_fusion_accuracy"
+
+output:
+  results_dir: "runs/p4_hierarchical_tree/tacred_5shot/seed_2021"
+  metrics_file: "metrics.json"
+  summary_file: "summary.json"
+  matrix_csv: "performance_matrix.csv"
+  matrix_json: "performance_matrix.json"
+  conclusion_file: "conclusion.md"
