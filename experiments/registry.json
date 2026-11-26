@@ -662,6 +662,83 @@
         "matrix_csv": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021/performance_matrix.csv",
         "confusion_matrix_file": "runs/p4_hierarchical_tree/tacred_5shot/seed_2021/router_confusion_matrix.json"
       }
+    },
+    {
+      "id": "E018",
+      "title": "Multi-Seed Verification (5 Seeds: 2021-2025) of Proposed TAPTA on FewRel & TACRED Track A",
+      "method": "tapta_hierarchical_tree_multiseed",
+      "baseline_role": "proposed_tapta_multiseed",
+      "execution_mode": "google_colab_gpu",
+      "note": "Final multi-seed verification of proposed TAPTA method (Hierarchical Prompt Tree with Hard/Confidence Routing) across 5 independent seeds (2021, 2022, 2023, 2024, 2025) on FewRel (80 relations) and TACRED (41 relations) under strict 5-shot, rehearsal-free M=0, 100% frozen BERT-base 109.5M, Task-Agnostic CIL.",
+      "status": "completed_real",
+      "date": "2026-11-26",
+      "benchmarks": {
+        "fewrel_track_a": {
+          "dataset": "FewRel Track A",
+          "num_tasks": 8,
+          "relations_per_task": 10,
+          "total_relations": 80,
+          "train_shot": 5,
+          "test_shot": 100,
+          "seeds": [
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "num_seeds": 5,
+          "results": {
+            "final_acc_mean": 57.74,
+            "final_acc_std": 0.36,
+            "final_hard_top1_mean": 58.46,
+            "final_hard_top1_std": 0.45,
+            "final_soft_fusion_mean": 57.74,
+            "final_soft_fusion_std": 0.36,
+            "average_incremental_accuracy_mean": 67.22,
+            "average_incremental_accuracy_std": 0.99,
+            "average_forgetting_mean": 12.53,
+            "average_forgetting_std": 1.31,
+            "router_top1_accuracy_mean": 64.69,
+            "router_top2_coverage_mean": 81.41
+          }
+        },
+        "tacred_track_a": {
+          "dataset": "TACRED Track A",
+          "num_tasks": 8,
+          "relations_per_task": 5,
+          "total_relations": 41,
+          "train_shot": 5,
+          "test_shot": 100,
+          "seeds": [
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "num_seeds": 5,
+          "results": {
+            "final_acc_mean": 42.83,
+            "final_acc_std": 0.3,
+            "final_hard_top1_mean": 42.91,
+            "final_hard_top1_std": 0.51,
+            "final_soft_fusion_mean": 42.83,
+            "final_soft_fusion_std": 0.3,
+            "average_incremental_accuracy_mean": 58.15,
+            "average_incremental_accuracy_std": 5.56,
+            "average_forgetting_mean": 16.11,
+            "average_forgetting_std": 2.66,
+            "router_top1_accuracy_mean": 49.87,
+            "router_top2_coverage_mean": 69.57
+          }
+        }
+      },
+      "artifacts": {
+        "multiseed_summary_json": "runs/multiseed_results/multiseed_summary.json",
+        "notebook_path": "notebooks/tapta_multiseed_final_colab.ipynb",
+        "zip_bundle": "tapta_multiseed_final_results.zip"
+      }
     }
   ]
 }
