@@ -24,7 +24,11 @@ Trong bundle Colab có **13** thư mục có `metrics.json`:
   12. `dt_c4_cross_task_dispersed/fewrel_5shot/seed_2021` (Exp C, `dfp=9531341f50`)
 - **1 lượt chạy bị trùng / gắn nhãn sai (Mislabeled Duplicate):**
   - `dt_c0_prototype_control/tacred_5shot/seed_2021`: `metrics.json` và `manifest.json` ghi nhận `dataset: fewrel`, `dfp=105e7ede38`, `num_leaves=80`, `NCM Acc=58.61%` — trùng hoàn toàn với `dt_c0_prototype_control/fewrel_5shot/seed_2021`. Nguyên nhân: Cell 6 của notebook `8fc4c81` gọi nhầm `--config configs/dynatree_cre/dt_c0_prototype_control_fewrel_5shot_seed2021.yaml`.
-  - **Khắc phục:** Đã tạo `configs/dynatree_cre/dt_c0_prototype_control_tacred_5shot_seed2021.yaml` và cập nhật Cell 6 notebook để chạy cả `DT-C0 (t1_centered_cosine)` và `DT-C0 (raw_cosine)` trên TACRED ở lượt Colab tiếp theo.
+  - **Khắc phục:** Đã tạo `configs/dynatree_cre/dt_c0_prototype_control_tacred_5shot_seed2021.yaml` và cập nhật Cell 6 notebook. Kết quả chạy bổ sung trên Colab GPU (`m7_diagnostics_bundle.zip`, `2026-11-28`) đã xác nhận:
+    - `DT-C0 Centered` (TACRED, `t1_centered_cosine`, `q=0.70`): Whole = **`41.85%`**, AA = **`43.27%`**, AIA = `61.47%`, F = `16.22%`, `3` cụm (`min=4, max=28, singleton=0%, sep=0.869`).
+    - `DT-C0 Raw` (TACRED, `raw_cosine`, `0.75`): Whole = **`41.75%`**, AA = **`43.27%`**, AIA = `62.85%`, F = `13.55%`, `2` cụm lệch (`min=1, max=40, singleton=50%, sep=0.175`).
+    - Kết quả này xác nhận `DT-C4` TACRED (`36.95%` Whole) bị tụt `-4.90%` so với chính `DT-C0` do cluster-size bias (`Route Top-1` tụt xuống `27.85%`).
+- **Tình trạng checkpoint `.pt` trên Google Drive (`2026-11-28`):** Trong `m7_diagnostics_bundle.zip`, thư mục `m7_diagnostics/` trống vì lượt chạy `8fc4c81` trước đó dùng `USE_GDRIVE = False` nên các file `state.pt` chưa được lưu lên Google Drive. Từ `6e925f5` trở đi Google Drive symlink đã bật mặc định.
 
 ---
 

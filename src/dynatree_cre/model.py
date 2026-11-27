@@ -39,6 +39,7 @@ class DynaTreeCREModel(nn.Module):
             encoder_version=config.prototype.encoder,
             representation_strategy=config.prototype.representation_strategy,
             similarity_space=config.prototype.similarity_space,
+            retrieval_similarity_space=config.prototype.retrieval_similarity_space,
         )
         self.tree = DynamicSemanticTree(
             rep_dim=self.rep_dim,
@@ -81,6 +82,7 @@ class DynaTreeCREModel(nn.Module):
         """Run full query -> router -> prompt composition -> prompted encoder -> cosine logits."""
         raw_q = self.encode_stationary_queries(input_ids, attention_mask, e1_indices, e2_indices)
         transformed_q = self.prototype_bank.transform_queries(raw_q)
+        retrieval_q = self.prototype_bank.transform_queries_for_retrieval(raw_q)
 
         if self.is_prototype_only:
             sims, ordered_ids = self.prototype_bank.predict_nearest_prototype(raw_q)
@@ -91,15 +93,20 @@ class DynaTreeCREModel(nn.Module):
                 "ncm_logits": sims,
                 "ordered_relation_ids": ordered_ids,
                 "routing": None,
-                "representations": transformed_q,
+                "representations": retrieval_q,
             }
 
+        leaf_ret, cluster_ret = self.prototype_bank.get_retrieval_prototypes(
+            self.tree, self.tree.seen_relation_ids(), self.tree.cluster_ids()
+        )
         routing: RoutingResult = self.router.route(
-            queries=transformed_q,
+            queries=retrieval_q,
             tree=self.tree,
             prompt_bank=self.prompt_bank,
             strategy_override=strategy_override,
             gold_relation_ids=gold_relation_ids,
+            leaf_protos_override=leaf_ret,
+            cluster_protos_override=cluster_ret,
         )
         z = self.query_encoder.forward_prompted(
             input_ids=input_ids,

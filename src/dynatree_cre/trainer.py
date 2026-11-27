@@ -21,6 +21,7 @@ from src.dynatree_cre.checkpoint import (
     write_json,
 )
 from src.dynatree_cre.config import DynaTreeConfig
+from src.dynatree_cre.diagnostic import compute_m7_routing_decomposition
 from src.dynatree_cre.metrics import (
     PerformanceMatrix,
     compute_accuracy,
@@ -208,6 +209,7 @@ class DynaTreeContinualTrainer:
         target_in_topk_hits = 0
         new_leaf_selected_hits = 0
         zero_prompt_grad_steps = 0
+        leaf_nonzero_grad_counts: dict[str, int] = {lid: 0 for lid in current_leaf_ids}
         total_exec_steps = 0
         last_loss = 0.0
 
@@ -259,11 +261,12 @@ class DynaTreeContinualTrainer:
                         if any(cand in current_rel_set for cand in topk_r):
                             new_leaf_selected_hits += 1
 
-                    has_leaf_grad = any(
-                        self.model.prompt_bank.leaf_prompts[lid].grad is not None
-                        and float(self.model.prompt_bank.leaf_prompts[lid].grad.abs().sum().item()) > 0.0
-                        for lid in current_leaf_ids
-                    )
+                    has_leaf_grad = False
+                    for lid in current_leaf_ids:
+                        grad_t = self.model.prompt_bank.leaf_prompts[lid].grad
+                        if grad_t is not None and float(grad_t.abs().sum().item()) > 0.0:
+                            has_leaf_grad = True
+                            leaf_nonzero_grad_counts[lid] += 1
                     if not has_leaf_grad:
                         zero_prompt_grad_steps += 1
 
@@ -285,6 +288,7 @@ class DynaTreeContinualTrainer:
         ncm_feats = self._compute_prompted_class_means(task, use_effective_leaf_prompt=False)
         self.model.classifier.update_ncm_prototypes(ncm_feats)
 
+        zero_grad_new_leaf_count = sum(1 for c in leaf_nonzero_grad_counts.values() if c == 0)
         return {
             "final_loss": float(last_loss),
             "trainable_param_count": trainable_param_count,
@@ -295,6 +299,7 @@ class DynaTreeContinualTrainer:
                 float(new_leaf_selected_hits / total_samples_seen) if total_samples_seen > 0 else 0.0
             ),
             "train_zero_prompt_grad_steps": int(zero_prompt_grad_steps),
+            "train_zero_grad_new_leaf_count": int(zero_grad_new_leaf_count),
             "total_train_steps": int(total_exec_steps),
         }
 
@@ -312,6 +317,8 @@ class DynaTreeContinualTrainer:
         pred_cos_rels: list[int] = []
         pred_ncm_rels: list[int] = []
         topk_selected_all: list[list[int]] = []
+        ranked_top10_all: list[list[int]] = []
+        top1_probs_all: list[float] = []
         entropies: list[float] = []
 
         t0 = time.perf_counter()
@@ -339,8 +346,15 @@ class DynaTreeContinualTrainer:
 
             true_rels.extend(rel_ids.cpu().tolist())
             if out["routing"] is not None:
-                topk_selected_all.extend(out["routing"].selected_relation_ids.cpu().tolist())
-                entropies.extend(out["routing"].routing_entropy.cpu().tolist())
+                routing = out["routing"]
+                topk_selected_all.extend(routing.selected_relation_ids.cpu().tolist())
+                entropies.extend(routing.routing_entropy.cpu().tolist())
+                k_rank = min(10, routing.relation_probabilities.size(1))
+                r_probs, r_pos = torch.topk(routing.relation_probabilities, k=k_rank, dim=-1)
+                ord_ids = routing.ordered_relation_ids
+                for row_pos, row_p in zip(r_pos.cpu().tolist(), r_probs.cpu().tolist()):
+                    ranked_top10_all.append([ord_ids[idx] for idx in row_pos])
+                    top1_probs_all.append(float(row_p[0]))
 
         elapsed = time.perf_counter() - t0
         return {
@@ -348,6 +362,8 @@ class DynaTreeContinualTrainer:
             "pred_cos_rels": pred_cos_rels,
             "pred_ncm_rels": pred_ncm_rels,
             "topk_selected": topk_selected_all,
+            "ranked_top10": ranked_top10_all,
+            "top1_probs": top1_probs_all,
             "entropies": entropies,
             "cosine_acc": compute_accuracy(true_rels, pred_cos_rels),
             "cosine_macro_f1": compute_macro_f1(true_rels, pred_cos_rels),
@@ -363,6 +379,8 @@ class DynaTreeContinualTrainer:
         all_cos_pred: list[int] = []
         all_ncm_pred: list[int] = []
         all_topk: list[list[int]] = []
+        all_ranked_top10: list[list[int]] = []
+        all_top1_probs: list[float] = []
         all_entropies: list[float] = []
         total_eval_time = 0.0
 
@@ -376,6 +394,8 @@ class DynaTreeContinualTrainer:
             all_cos_pred.extend(eval_res["pred_cos_rels"])
             all_ncm_pred.extend(eval_res["pred_ncm_rels"])
             all_topk.extend(eval_res["topk_selected"])
+            all_ranked_top10.extend(eval_res["ranked_top10"])
+            all_top1_probs.extend(eval_res["top1_probs"])
             all_entropies.extend(eval_res["entropies"])
             total_eval_time += eval_res["eval_time_sec"]
 
@@ -424,6 +444,29 @@ class DynaTreeContinualTrainer:
             relation_to_task=self.stream.relation_to_task,
         )
 
+        m7_1_decomp: dict[str, Any] = {}
+        if all_ranked_top10:
+            diag_records = []
+            for r_true, p_ncm, p_cos, r_top10, t1_p, ent in zip(
+                all_true, all_ncm_pred, all_cos_pred, all_ranked_top10, all_top1_probs, all_entropies
+            ):
+                top1_r = r_top10[0]
+                true_cid = self.model.tree.nodes[self.model.tree.relation_to_node[r_true]].parent_id
+                pred_cid = self.model.tree.nodes[self.model.tree.relation_to_node[top1_r]].parent_id
+                diag_records.append({
+                    "true_rel": r_true,
+                    "pred_ncm": p_ncm,
+                    "pred_cos": p_cos,
+                    "ranked_rel_ids": r_top10,
+                    "top1_prob": t1_p,
+                    "routing_top1_correct": top1_r == r_true,
+                    "cluster_top1_correct": true_cid == pred_cid,
+                    "entropy": ent,
+                })
+            m7_1_decomp = compute_m7_routing_decomposition(
+                diag_records, self.model.tree, self.stream.relation_to_task, ks=(1, 3, 5, 10)
+            )
+
         return {
             "cosine_whole_accuracy": cos_whole,
             "cosine_whole_macro_f1": compute_macro_f1(all_true, all_cos_pred),
@@ -439,6 +482,7 @@ class DynaTreeContinualTrainer:
                 for j, r in per_task_results.items()
             },
             "routing_diagnostics": routing_diag,
+            "m7_1_decomposition": m7_1_decomp,
             "confusion_cosine": confusion_cos,
             "confusion_ncm": confusion_ncm,
             "eval_time_sec": float(total_eval_time),
@@ -581,8 +625,10 @@ class DynaTreeContinualTrainer:
                             "target_in_topk_rate": r["train_stats"]["train_target_in_topk_rate"],
                             "new_leaf_selected_rate": r["train_stats"]["train_new_leaf_selected_rate"],
                             "zero_prompt_grad_steps": r["train_stats"]["train_zero_prompt_grad_steps"],
+                            "zero_grad_new_leaf_count": r["train_stats"].get("train_zero_grad_new_leaf_count", 0),
                         },
                         "eval_routing": r["eval_stats"]["routing_diagnostics"],
+                        "m7_1_decomposition": r["eval_stats"].get("m7_1_decomposition", {}),
                     }
                     for r in self.stage_records
                 ]

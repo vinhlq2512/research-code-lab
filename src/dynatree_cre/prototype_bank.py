@@ -71,23 +71,36 @@ class SemanticPrototypeBank:
         encoder_version: str = "bert-base-uncased",
         representation_strategy: str = "entity_pair",
         similarity_space: str = "t1_centered_cosine",
+        retrieval_similarity_space: str | None = None,
     ) -> None:
         self.rep_dim = int(rep_dim)
         self.encoder_version = encoder_version
         self.representation_strategy = representation_strategy
         self.similarity_space = similarity_space
+        self.retrieval_similarity_space = retrieval_similarity_space
         self.prototypes: dict[int, RelationPrototype] = {}
         self.anchor_mean: np.ndarray | None = None
+        self.t1_raw_anchor_mean: np.ndarray | None = None
         self.anchor_frozen: bool = False
 
-    def _apply_space_np(self, raw_proto: np.ndarray) -> np.ndarray:
+    @property
+    def effective_retrieval_space(self) -> str:
+        return self.retrieval_similarity_space or self.similarity_space
+
+    @staticmethod
+    def _apply_given_space_np(
+        raw_proto: np.ndarray, space: str, anchor_mean: np.ndarray | None
+    ) -> np.ndarray:
         raw_norm = l2_normalize_np(raw_proto)
-        if self.similarity_space == "raw_cosine" or self.anchor_mean is None:
+        if space == "raw_cosine" or anchor_mean is None:
             return raw_norm
-        centered = raw_norm - self.anchor_mean
+        centered = raw_norm - anchor_mean
         if float(np.linalg.norm(centered)) < 1e-12:
             return raw_norm
         return l2_normalize_np(centered)
+
+    def _apply_space_np(self, raw_proto: np.ndarray) -> np.ndarray:
+        return self._apply_given_space_np(raw_proto, self.similarity_space, self.anchor_mean)
 
     def register_task_prototypes(
         self,
@@ -121,10 +134,14 @@ class SemanticPrototypeBank:
             raw_protos[rel_id] = l2_normalize_np(mean_vec)
             counts[rel_id] = int(q_tensor.size(0))
 
+        # Always capture T1 anchor mean once on raw prototypes so dual-space routing works in both directions
+        if self.t1_raw_anchor_mean is None:
+            stacked_t1 = np.stack([raw_protos[r] for r in sorted_rel_ids], axis=0)
+            self.t1_raw_anchor_mean = stacked_t1.mean(axis=0).astype(np.float32)
+
         # Compute or update centering mean according to similarity_space policy
         if self.similarity_space == "t1_centered_cosine" and not self.anchor_frozen:
-            stacked = np.stack([raw_protos[r] for r in sorted_rel_ids], axis=0)
-            self.anchor_mean = stacked.mean(axis=0).astype(np.float32)
+            self.anchor_mean = self.t1_raw_anchor_mean.copy()
             self.anchor_frozen = True
         elif self.similarity_space == "incremental_centered_cosine":
             all_raw = [p.raw_prototype_vector for p in self.prototypes.values()] + [
@@ -153,18 +170,76 @@ class SemanticPrototypeBank:
 
         return created
 
-    def transform_queries(self, raw_queries: torch.Tensor) -> torch.Tensor:
-        """Transform raw L2-normalized query vectors [B, D] into prototype similarity space."""
+    @staticmethod
+    def _transform_queries_with_space(
+        raw_queries: torch.Tensor, space: str, anchor_mean: np.ndarray | None
+    ) -> torch.Tensor:
         if torch.isnan(raw_queries).any() or torch.isinf(raw_queries).any():
             raise ValueError("NaN/Inf encountered in raw_queries.")
         norm_q = F.normalize(raw_queries, p=2, dim=-1, eps=1e-12)
-        if self.similarity_space == "raw_cosine" or self.anchor_mean is None:
+        if space == "raw_cosine" or anchor_mean is None:
             return norm_q
-        anchor = torch.from_numpy(self.anchor_mean).to(device=norm_q.device, dtype=norm_q.dtype)
+        anchor = torch.from_numpy(anchor_mean).to(device=norm_q.device, dtype=norm_q.dtype)
         centered = norm_q - anchor.unsqueeze(0)
         norms = centered.norm(p=2, dim=-1, keepdim=True)
         safe = torch.where(norms > 1e-12, centered, norm_q)
         return F.normalize(safe, p=2, dim=-1, eps=1e-12)
+
+    def _retrieval_anchor_mean(self) -> np.ndarray | None:
+        space = self.effective_retrieval_space
+        if space == "raw_cosine":
+            return None
+        if space == self.similarity_space and self.anchor_mean is not None:
+            return self.anchor_mean
+        if space == "t1_centered_cosine":
+            return self.t1_raw_anchor_mean
+        all_raw = [p.raw_prototype_vector for p in self.prototypes.values()]
+        return np.stack(all_raw, axis=0).mean(axis=0).astype(np.float32) if all_raw else None
+
+    def transform_queries(self, raw_queries: torch.Tensor) -> torch.Tensor:
+        """Transform raw L2-normalized query vectors [B, D] into prototype similarity space."""
+        return self._transform_queries_with_space(raw_queries, self.similarity_space, self.anchor_mean)
+
+    def transform_queries_for_retrieval(self, raw_queries: torch.Tensor) -> torch.Tensor:
+        """Transform raw queries into the configured retrieval_similarity_space."""
+        return self._transform_queries_with_space(
+            raw_queries, self.effective_retrieval_space, self._retrieval_anchor_mean()
+        )
+
+    def get_retrieval_prototypes(
+        self,
+        tree: Any,
+        ordered_rel_ids: list[int],
+        ordered_cluster_ids: list[str],
+    ) -> tuple[np.ndarray, np.ndarray | None]:
+        """Return leaf and cluster prototypes in retrieval space without storing old instances."""
+        ret_space = self.effective_retrieval_space
+        ordered_leaf_ids = [tree.relation_to_node[r] for r in ordered_rel_ids]
+        if ret_space == self.similarity_space:
+            leaf_mat = np.stack([tree.nodes[lid].prototype for lid in ordered_leaf_ids], axis=0)
+            cluster_mat = (
+                np.stack([tree.nodes[cid].prototype for cid in ordered_cluster_ids], axis=0)
+                if ordered_cluster_ids
+                else None
+            )
+            return leaf_mat, cluster_mat
+
+        ret_anchor = self._retrieval_anchor_mean()
+        rel_ret_vecs = {
+            r: self._apply_given_space_np(self.prototypes[r].raw_prototype_vector, ret_space, ret_anchor)
+            for r in ordered_rel_ids
+        }
+        leaf_mat = np.stack([rel_ret_vecs[r] for r in ordered_rel_ids], axis=0)
+        if not ordered_cluster_ids:
+            return leaf_mat, None
+
+        cluster_vecs: list[np.ndarray] = []
+        for cid in ordered_cluster_ids:
+            member_lids = tree.nodes[cid].children_ids
+            member_rels = [int(tree.nodes[lid].relation_id) for lid in member_lids]
+            mean_c = np.stack([rel_ret_vecs[r] for r in member_rels], axis=0).mean(axis=0)
+            cluster_vecs.append(l2_normalize_np(mean_c))
+        return leaf_mat, np.stack(cluster_vecs, axis=0)
 
     def predict_nearest_prototype(
         self,
@@ -175,8 +250,16 @@ class SemanticPrototypeBank:
         ordered_ids = sorted(self.prototypes.keys()) if relation_ids is None else list(relation_ids)
         if not ordered_ids:
             raise ValueError("No relation prototypes registered.")
-        q_space = self.transform_queries(raw_queries)
-        mat = np.stack([self.prototypes[r].prototype_vector for r in ordered_ids], axis=0)
+        ret_space = self.effective_retrieval_space
+        ret_anchor = self._retrieval_anchor_mean()
+        q_space = self.transform_queries_for_retrieval(raw_queries)
+        if ret_space == self.similarity_space:
+            mat = np.stack([self.prototypes[r].prototype_vector for r in ordered_ids], axis=0)
+        else:
+            mat = np.stack(
+                [self._apply_given_space_np(self.prototypes[r].raw_prototype_vector, ret_space, ret_anchor) for r in ordered_ids],
+                axis=0,
+            )
         p_tensor = torch.from_numpy(mat).to(device=q_space.device, dtype=q_space.dtype)
         sims = torch.mm(q_space, p_tensor.t())
         return sims, ordered_ids
@@ -194,7 +277,11 @@ class SemanticPrototypeBank:
             "encoder_version": self.encoder_version,
             "representation_strategy": self.representation_strategy,
             "similarity_space": self.similarity_space,
+            "retrieval_similarity_space": self.retrieval_similarity_space,
             "anchor_mean": self.anchor_mean.tolist() if self.anchor_mean is not None else None,
+            "t1_raw_anchor_mean": (
+                self.t1_raw_anchor_mean.tolist() if self.t1_raw_anchor_mean is not None else None
+            ),
             "anchor_frozen": self.anchor_frozen,
             "prototypes": {str(k): v.to_dict() for k, v in sorted(self.prototypes.items())},
         }
@@ -206,9 +293,16 @@ class SemanticPrototypeBank:
             encoder_version=str(data["encoder_version"]),
             representation_strategy=str(data["representation_strategy"]),
             similarity_space=str(data["similarity_space"]),
+            retrieval_similarity_space=data.get("retrieval_similarity_space"),
         )
         anchor = data.get("anchor_mean")
+        t1_anchor = data.get("t1_raw_anchor_mean")
         bank.anchor_mean = np.asarray(anchor, dtype=np.float32) if anchor is not None else None
+        bank.t1_raw_anchor_mean = (
+            np.asarray(t1_anchor, dtype=np.float32)
+            if t1_anchor is not None
+            else (bank.anchor_mean.copy() if bank.anchor_mean is not None else None)
+        )
         bank.anchor_frozen = bool(data.get("anchor_frozen", False))
         bank.prototypes = {
             int(k): RelationPrototype.from_dict(v) for k, v in data.get("prototypes", {}).items()

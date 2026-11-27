@@ -50,9 +50,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--epochs-override", type=int, default=None, help="Override epochs_per_task")
     parser.add_argument("--similarity-space", type=str, default=None)
+    parser.add_argument("--retrieval-similarity-space", type=str, default=None)
     parser.add_argument("--threshold-mode", type=str, default=None)
     parser.add_argument("--insertion-threshold", type=float, default=None)
     parser.add_argument("--prompt-length", type=int, default=None)
+    parser.add_argument("--routing-strategy", type=str, default=None)
+    parser.add_argument("--cluster-size-eta", type=float, default=None)
+    parser.add_argument("--hybrid-cluster-gamma", type=float, default=None)
     parser.add_argument("--train-mode", type=str, default=None)
     parser.add_argument("--task-distribution", type=str, default=None)
     parser.add_argument("--resume-from", type=str, default=None, help="Checkpoint state.pt to resume from")
@@ -77,12 +81,20 @@ def main() -> None:
         config.training.epochs_per_task = int(args.epochs_override)
     if args.similarity_space is not None:
         config.prototype.similarity_space = args.similarity_space
+    if args.retrieval_similarity_space is not None:
+        config.prototype.retrieval_similarity_space = args.retrieval_similarity_space
     if args.threshold_mode is not None:
         config.tree.threshold_mode = args.threshold_mode
     if args.insertion_threshold is not None:
         config.tree.insertion_threshold = float(args.insertion_threshold)
     if args.prompt_length is not None:
         config.prompt.length = int(args.prompt_length)
+    if args.routing_strategy is not None:
+        config.routing.strategy = args.routing_strategy
+    if args.cluster_size_eta is not None:
+        config.routing.cluster_size_eta = float(args.cluster_size_eta)
+    if args.hybrid_cluster_gamma is not None:
+        config.routing.hybrid_cluster_gamma = float(args.hybrid_cluster_gamma)
     if args.train_mode is not None:
         config.routing.train_mode = args.train_mode
     if args.task_distribution is not None:

@@ -23,6 +23,7 @@ class PrototypeConfig:
     normalization: str = "l2"
     aggregation: str = "mean"
     similarity_space: str = "t1_centered_cosine"  # t1_centered_cosine | incremental_centered_cosine | raw_cosine
+    retrieval_similarity_space: str | None = None  # None -> defaults to similarity_space; or raw_cosine | t1_centered_cosine | incremental_centered_cosine
     use_relation_description: bool = False
     max_seq_length: int = 128
 
@@ -57,12 +58,14 @@ class PromptConfig:
 
 @dataclass
 class RoutingConfig:
-    strategy: str = "hierarchical_soft"  # none | flat_hard | flat_soft_topk | dense_soft | hierarchical_soft | oracle_route
+    strategy: str = "hierarchical_soft"  # none | flat_hard | flat_soft_topk | dense_soft | hierarchical_soft | size_corrected_hierarchical | hybrid_tree_routing | oracle_route
     train_mode: str = "inference_consistent"  # inference_consistent | dense_soft | warmup_target_assist
     warmup_epochs: int = 0
     top_k: int = 3
     cluster_temperature: float = 0.2
     relation_temperature: float = 0.2
+    cluster_size_eta: float = 0.0
+    hybrid_cluster_gamma: float = 0.0
     use_task_id: bool = False
     use_gold_relation: bool = False
 
@@ -146,6 +149,14 @@ class DynaTreeConfig:
             "raw_cosine",
         ):
             raise ValueError(f"Unsupported similarity_space: {self.prototype.similarity_space}")
+        if self.prototype.retrieval_similarity_space is not None and self.prototype.retrieval_similarity_space not in (
+            "t1_centered_cosine",
+            "incremental_centered_cosine",
+            "raw_cosine",
+        ):
+            raise ValueError(
+                f"Unsupported retrieval_similarity_space: {self.prototype.retrieval_similarity_space}"
+            )
 
         if self.tree.distance_metric == "cosine" and self.tree.linkage == "ward":
             raise ValueError("Ward linkage is mathematically invalid with cosine distance.")
@@ -171,6 +182,8 @@ class DynaTreeConfig:
             "flat_soft_topk",
             "dense_soft",
             "hierarchical_soft",
+            "size_corrected_hierarchical",
+            "hybrid_tree_routing",
             "oracle_route",
         ):
             raise ValueError(f"Unsupported routing.strategy: {self.routing.strategy}")

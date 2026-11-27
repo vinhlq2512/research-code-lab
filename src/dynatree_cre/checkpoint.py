@@ -97,8 +97,18 @@ def load_dynatree_checkpoint(
     payload = torch.load(ckpt_path, map_location="cpu", weights_only=False)
 
     saved_cfg = payload["config"]
+    cur_cfg = config.to_dict()
+    defaults_compat = {
+        "prototype": {"retrieval_similarity_space": None},
+        "routing": {"cluster_size_eta": 0.0, "hybrid_cluster_gamma": 0.0},
+    }
     for section in ("method", "prototype", "tree", "prompt", "routing", "classifier", "memory"):
-        if saved_cfg.get(section) != config.to_dict().get(section):
+        s_sec = dict(saved_cfg.get(section) or {})
+        c_sec = dict(cur_cfg.get(section) or {})
+        for k, dv in defaults_compat.get(section, {}).items():
+            s_sec.setdefault(k, dv)
+            c_sec.setdefault(k, dv)
+        if s_sec != c_sec:
             raise ValueError(
                 f"Config mismatch on '{section}' during checkpoint resume."
             )

@@ -45,8 +45,10 @@ class TaskAgnosticRouter:
         prompt_bank: HierarchicalPromptBank,
         strategy_override: str | None = None,
         gold_relation_ids: torch.Tensor | None = None,
+        leaf_protos_override: np.ndarray | None = None,
+        cluster_protos_override: np.ndarray | None = None,
     ) -> RoutingResult:
-        """Route transformed queries [B, D] over observed tree nodes and compose prompts [B, L, d]."""
+        """Route queries [B, D] over observed tree nodes and compose prompts [B, L, d]."""
         strategy = strategy_override or self.config.strategy
         device = queries.device
         dtype = queries.dtype
@@ -57,8 +59,12 @@ class TaskAgnosticRouter:
         ordered_cluster_ids = tree.cluster_ids()
         cluster_idx_map = {cid: idx for idx, cid in enumerate(ordered_cluster_ids)}
 
-        # Gather leaf & cluster prototypes
-        leaf_mat = np.stack([tree.nodes[lid].prototype for lid in ordered_leaf_ids], axis=0)
+        # Gather leaf & cluster prototypes (optionally from retrieval space)
+        leaf_mat = (
+            leaf_protos_override
+            if leaf_protos_override is not None
+            else np.stack([tree.nodes[lid].prototype for lid in ordered_leaf_ids], axis=0)
+        )
         leaf_protos = self._to_tensor(leaf_mat, device=device, dtype=dtype)  # [R, D]
 
         norm_q = F.normalize(queries, p=2, dim=-1, eps=1e-12)
@@ -68,24 +74,48 @@ class TaskAgnosticRouter:
         tau_r = max(float(self.config.relation_temperature), 1e-3)
 
         cluster_probs: torch.Tensor | None = None
-        if strategy == "hierarchical_soft":
-            cluster_mat = np.stack([tree.nodes[cid].prototype for cid in ordered_cluster_ids], axis=0)
+        if strategy in ("hierarchical_soft", "size_corrected_hierarchical"):
+            cluster_mat = (
+                cluster_protos_override
+                if cluster_protos_override is not None
+                else np.stack([tree.nodes[cid].prototype for cid in ordered_cluster_ids], axis=0)
+            )
             cluster_protos = self._to_tensor(cluster_mat, device=device, dtype=dtype)  # [C, D]
             cluster_sims = torch.mm(norm_q, cluster_protos.t())  # [B, C]
             log_cluster_probs = F.log_softmax(cluster_sims / tau_c, dim=-1)  # [B, C]
             cluster_probs = torch.exp(log_cluster_probs)
 
-            # Conditional leaf probabilities inside each cluster computed in log-space
+            eta = float(self.config.cluster_size_eta) if strategy == "size_corrected_hierarchical" else 0.0
             log_global_leaf = torch.empty_like(leaf_sims)
             for c_idx, cid in enumerate(ordered_cluster_ids):
                 member_lids = tree.nodes[cid].children_ids
                 member_positions = [ordered_leaf_ids.index(lid) for lid in member_lids]
                 cond_logits = leaf_sims[:, member_positions] / tau_r
                 log_cond = F.log_softmax(cond_logits, dim=-1)
-                log_global_leaf[:, member_positions] = log_cluster_probs[:, c_idx : c_idx + 1] + log_cond
+                size_term = eta * float(np.log(max(1, len(member_positions)))) if eta != 0.0 else 0.0
+                log_global_leaf[:, member_positions] = log_cluster_probs[:, c_idx : c_idx + 1] + log_cond + size_term
 
-            rel_probs = torch.exp(log_global_leaf)
-            rel_probs = rel_probs / rel_probs.sum(dim=-1, keepdim=True).clamp(min=1e-12)
+            rel_probs = F.softmax(log_global_leaf, dim=-1)
+        elif strategy == "hybrid_tree_routing":
+            gamma = float(self.config.hybrid_cluster_gamma)
+            if ordered_cluster_ids and gamma != 0.0:
+                cluster_mat = (
+                    cluster_protos_override
+                    if cluster_protos_override is not None
+                    else np.stack([tree.nodes[cid].prototype for cid in ordered_cluster_ids], axis=0)
+                )
+                cluster_protos = self._to_tensor(cluster_mat, device=device, dtype=dtype)
+                cluster_sims = torch.mm(norm_q, cluster_protos.t())
+                cluster_probs = F.softmax(cluster_sims / tau_c, dim=-1)
+                leaf_to_cidx_t = torch.tensor(
+                    [cluster_idx_map[str(tree.nodes[lid].parent_id)] for lid in ordered_leaf_ids],
+                    dtype=torch.long,
+                    device=device,
+                )
+                hybrid_scores = leaf_sims + gamma * cluster_sims[:, leaf_to_cidx_t]
+            else:
+                hybrid_scores = leaf_sims
+            rel_probs = F.softmax(hybrid_scores / tau_r, dim=-1)
         elif strategy in ("flat_hard", "flat_soft_topk", "dense_soft", "oracle_route"):
             rel_probs = F.softmax(leaf_sims / tau_r, dim=-1)
         else:
