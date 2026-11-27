@@ -2,6 +2,15 @@
 
 Workspace này dùng để gom source code thử nghiệm phục vụ nghiên cứu trước khi đưa phần ổn định sang source code chính.
 
+## Đề Tài Luận Văn Thạc Sĩ & Phương Pháp Đang Active (từ 2026-11-27)
+
+- **Đề tài luận văn (Project chính):** **Continual Relation Extraction with Task-Aware Prompt Adaptation (TAPTA / TAPA-CRE)**.
+- **Phương pháp đề xuất đang active trong đề tài TAPTA:** **DynaTree-CRE** (*Dynamic Semantic Prompt Trees for Rehearsal-Free Continual Relation Extraction with Task-Agnostic Routing*, working title).
+- **Hạ tầng thực thi bắt buộc:** 100% các lượt chạy thực nghiệm dữ liệu thật (`DT-C0..DT-C4`) chạy trên **Google Colab GPU (`device: cuda`)** qua [`notebooks/dynatree_cre_mvp_colab_seed2021.ipynb`](notebooks/dynatree_cre_mvp_colab_seed2021.ipynb).
+- **Source of Truth:** [`docs/research/README.md`](docs/research/README.md) · [`docs/research/RESEARCH_DIRECTION.md`](docs/research/RESEARCH_DIRECTION.md) · [`docs/research/methods/dynatree-cre/METHOD_SPEC.md`](docs/research/methods/dynatree-cre/METHOD_SPEC.md).
+- **Package & Runner:** `src/dynatree_cre/`, `experiments/run_dynatree_cre.py`, `configs/dynatree_cre/*.yaml`, `tests/dynatree_cre/`.
+- **Các mốc task-level trước đây trong luận văn TAPTA (`P0–P5`, `E001`–`E018`):** Được bảo tồn đầy đủ để đối chứng tại `src/models/`, `runs/`, `results/` và báo cáo chuyển tiếp [`docs/research/migrations/RESEARCH_DIRECTION_MIGRATION.md`](docs/research/migrations/RESEARCH_DIRECTION_MIGRATION.md).
+
 ## Vai trò
 
 - Thử nghiệm reproduction từ paper.

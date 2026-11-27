@@ -1,10 +1,12 @@
 # Research Project Status (STATUS.md)
 
-**Project Title**: Continual Relation Extraction with Task-Aware Prompt Adaptation (TAPA-CRE)  
-**Last Updated**: 2026-11-08  
-**Current Phase**: Infrastructure Setup & Pipeline Integration  
-**Active Lead Agent**: AGY (Google Antigravity)  
-**Partner Agent**: Codex (OpenAI Codex)  
+**Master's Thesis Project**: Continual Relation Extraction with Task-Aware Prompt Adaptation (TAPTA / TAPA-CRE)  
+**Active Proposed Method (since 2026-11-27)**: DynaTree-CRE — Dynamic Semantic Prompt Trees for Rehearsal-Free Continual Relation Extraction with Task-Agnostic Routing (Working Title; advances beyond earlier task-level `P0–P5` / `E007–E018`)  
+**Execution Policy**: 100% Real-Data Experiments on Google Colab GPU (`device: cuda`)  
+**Last Updated**: 2026-11-27  
+**Current Phase**: DynaTree-CRE MVP (`M0`–`M6`) for TAPTA Thesis — Ready for Colab Gate 5  
+**Active Branch**: `feat/dynatree-cre`  
+**Source of Truth**: `docs/research/README.md`  
 
 ---
 

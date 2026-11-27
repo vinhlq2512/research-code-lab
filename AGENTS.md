@@ -7,18 +7,18 @@ Repository instructions and conventions for AI coding agents (**Google Antigravi
 ## 1. Research Objective & Constraints
 
 ### Research Topic
-**Continual Relation Extraction with Task-Aware Prompt Adaptation (TAPA-CRE)**.
+- **Master's Thesis Project**: **Continual Relation Extraction with Task-Aware Prompt Adaptation (TAPTA / TAPA-CRE)** (overarching thesis project).
+- **Active Proposed Method within TAPTA (since 2026-11-27)**: **DynaTree-CRE — Dynamic Semantic Prompt Trees for Rehearsal-Free Continual Relation Extraction with Task-Agnostic Routing** (next-generation semantic-tree method for the TAPTA Master's Thesis, advancing beyond earlier task-level iterations `P0`–`P5` / `E007`–`E018`). See [`docs/research/README.md`](file:///Users/vinhlq2512/code/research-code-lab/docs/research/README.md), [`docs/research/methods/dynatree-cre/METHOD_SPEC.md`](file:///Users/vinhlq2512/code/research-code-lab/docs/research/methods/dynatree-cre/METHOD_SPEC.md), and [`docs/research/migrations/RESEARCH_DIRECTION_MIGRATION.md`](file:///Users/vinhlq2512/code/research-code-lab/docs/research/migrations/RESEARCH_DIRECTION_MIGRATION.md).
 
 ### Core Direction
-- **Benchmarks**: FewRel (80 relations, Track A) and TACRED across 8-task non-stationary sequential splits.
-- **Backbone Architecture**: Frozen Pre-trained Language Models (`bert-base-uncased`, `roberta-base`) to eliminate parameter degradation in lower representation layers.
-- **Adaptation & Routing**: Parameter-Efficient Fine-Tuning (LoRA / QLoRA), Hierarchical Prompt Tree (coarse domain to fine predicate), and Dynamic Soft Routing via Relation Prototype Memory.
-- **Anti-Forgetting Mechanism**: Exponential Moving Average (EMA) teacher distillation and prototype feature stability constraints.
-- **Evaluation Metrics**: Rigorous calculation of Average Accuracy ($A_T$) and Average Forgetting ($F_T$).
+- **Benchmarks**: FewRel (80 relations, Track A 8×10 5-shot) and TACRED (40 positive relations, Track A 8×5 5-shot) under Protocol v1 (`M=0` strict rehearsal-free, zero Task ID at inference).
+- **Backbone Architecture**: 100% Frozen Pre-trained Language Model (`bert-base-uncased`) in deterministic `eval()` mode for both stationary query extraction (`T1-centered cosine space`) and prompted relation representation.
+- **Adaptation & Routing**: Dynamic 2-tier Semantic Prompt Tree (`Root -> Semantic Cluster -> Relation`, residual additive prompt budget `L=8`), incremental prototype-based clustering (average linkage, no Ward), and Task-Agnostic Hierarchical Soft Top-K Routing (`DT-C0..DT-C4`).
+- **Evaluation Metrics**: Rigorous calculation of `Final AA`, `AIA`, `Average Forgetting`, `BWT`, routing diagnostics (`Recall@K`, `Cluster Acc`, `Entropy`), tree evolution metrics, and persistent memory/latency (`ExpandableCosineClassifier` + `PromptedNCMClassifier` reported side-by-side).
 
 ### Operational Constraints
 1. **Zero-Cost Policy**: Do not activate paid cloud APIs or continuous autonomous loops without human authorization.
-2. **Compute Gating**: Training runs exceeding 2 minutes or requiring discrete GPUs/clusters require explicit human approval (Human Gate 5).
+2. **Colab-Only Experiment Execution & Compute Gating**: **100% of real-data experiments** (smoke runs, baselines, ablations, single-seed debug runs, stress tests, and multi-seed runs) **MUST execute exclusively on Google Colab GPU (`device: cuda`)**, NEVER on the local MacBook (`mps`/`cpu`). Local execution is strictly restricted to fast offline `pytest` (`synthetic_tiny`), static validation, and post-Colab result analysis/plotting. Running Colab notebooks or cloud GPU jobs requires explicit human sign-off (Human Gate 5).
 3. **Data & Baseline Preservation**: Never delete, overwrite, or mutate existing baseline results, raw datasets, or run configurations.
 
 ---
@@ -36,7 +36,7 @@ Repository instructions and conventions for AI coding agents (**Google Antigravi
 
 | Domain | Google Antigravity (AGY) | OpenAI Codex |
 | :--- | :--- | :--- |
-| **Primary Focus** | Research Planning, Literature Review, Hypotheses, Orchestration, Rigor Review, Paper Writing | Model Implementation, Unit Testing, Baseline Validation, GPU/MPS Training, Metric Computation |
+| **Primary Focus** | Research Planning, Literature Review, Hypotheses, Orchestration, Rigor Review, Paper Writing | Model Implementation, Unit Testing, Baseline Validation, Colab CUDA Notebook Packaging & Post-Run Verification |
 | **Lifecycle Stages** | R1 (Literature), R2 (Gaps), R3 (Hypotheses), R4 (Methodology Design), R9 (Writing) | R5 (Baselines), R6 (Implementation), R7 (Execution), R8 (Evaluation & Ablations) |
 | **Working Mode** | Architectural & strategic synthesis | High-precision engineering & verification |
 | **Isolation Boundary** | Branch `research/[slug]` or local workspace | Branch `feature/[slug]` or isolated worktree |

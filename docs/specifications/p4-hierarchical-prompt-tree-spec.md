@@ -1,3 +1,12 @@
+---
+status: archived-comparator-spec
+research_direction: tapta-task-aware-prompt-adaptation
+related_new_spec: docs/research/methods/dynatree-cre/METHOD_SPEC.md
+updated_date: 2026-11-27
+---
+
+> **Ghi chú chuyển hướng (2026-11-27):** Tài liệu này mô tả cấu trúc cây phân cấp theo Task ID (`P4` TAPTA) của hướng nghiên cứu trước. Phương pháp đang active hiện tại là **DynaTree-CRE** (`docs/research/methods/dynatree-cre/METHOD_SPEC.md`), chuyển sang cây phân cấp theo ngữ nghĩa quan hệ (relation-level semantic clustering). Tài liệu `P4` được giữ nguyên để phục vụ đối chứng thực nghiệm (`E012`, `E013`, `E018`).
+
 # Đặc Tả Kỹ Thuật: P4 (TAPTA Hierarchical Prompt Tree & Decision Fusion)
 
 - **Mã thực nghiệm:** `P4` (TAPTA Hierarchical Prompt Tree with Sub-Centroid Routing & Decision Fusion)

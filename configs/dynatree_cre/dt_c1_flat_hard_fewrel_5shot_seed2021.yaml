@@ -1,0 +1,91 @@
+method:
+  name: dynatree_cre
+  variant: DT-C1
+
+prototype:
+  encoder: bert-base-uncased
+  freeze_encoder: true
+  representation_strategy: entity_pair
+  normalization: l2
+  aggregation: mean
+  similarity_space: t1_centered_cosine
+  use_relation_description: false
+  max_seq_length: 128
+
+tree:
+  max_depth: 2
+  initial_clustering: agglomerative
+  linkage: average
+  distance_metric: cosine
+  threshold_mode: t1_quantile
+  t1_quantile: 0.70
+  insertion_threshold: 0.75
+  update_policy: insert_or_create
+  cluster_weighting: equal_relation
+  allow_split: false
+  allow_merge: false
+  allow_reparenting: false
+
+prompt:
+  length: 8
+  composition: residual_addition
+  init_strategy: normal
+  use_root_prompt: false
+  use_cluster_prompts: false
+  freeze_old_root: true
+  freeze_old_clusters: true
+  freeze_old_leaves: true
+
+routing:
+  strategy: flat_hard
+  train_mode: inference_consistent
+  warmup_epochs: 0
+  top_k: 1
+  cluster_temperature: 0.2
+  relation_temperature: 0.2
+  use_task_id: false
+  use_gold_relation: false
+
+classifier:
+  type: expandable_cosine
+  scale: 20.0
+  init_from_prompted_prototype: true
+  freeze_old_weights: true
+  also_evaluate_ncm: true
+
+memory:
+  exemplar_budget: 0
+  feature_replay: false
+  generative_replay: false
+  retain_instance_embeddings: false
+
+loss:
+  classification: true
+  contrastive: false
+  routing_distillation: false
+  structure_preservation: false
+  parameter_regularization: false
+
+training:
+  epochs_per_task: 15
+  batch_size: 16
+  eval_batch_size: 64
+  learning_rate: 5.0e-3
+  classifier_lr: 5.0e-3
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  gradient_clip_norm: 1.0
+  device: cuda
+
+experiment:
+  experiment_id: DT-C1
+  dataset: fewrel
+  track: A
+  task_distribution: standard_random
+  base_dir: data/protocol_v1/fewrel
+  split_subdir: CFRLdata_10_100_10_5
+  task_order_strategy: conpl_seed_shuffle
+  train_shot: 5
+  test_shot: 100
+  seed: 2021
+  output_dir: runs/dynatree_cre/dt_c1_flat_hard/fewrel_5shot/seed_2021

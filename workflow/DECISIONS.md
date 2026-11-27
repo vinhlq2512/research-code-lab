@@ -1,5 +1,7 @@
 # Research Architecture Decisions (DECISIONS.md)
 
+> **Cập nhật 2026-11-27 (Research Direction Migration):** Kể từ ngày 2026-11-27, các quyết định kiến trúc cho hướng nghiên cứu active **DynaTree-CRE** được ghi nhận theo chuẩn Research Decision Records tại [`docs/research/decisions/RD-001`..`RD-012`](../docs/research/decisions/RD-001-migrate-to-dynatree-cre.md). Các ADR lịch sử của TAPTA dưới đây được giữ nguyên để truy vết.
+
 This log records major technical and methodological decisions for the Continual Relation Extraction (CRE) project, documenting the rationale, trade-offs, and consensus between AGY and Codex.
 
 ---

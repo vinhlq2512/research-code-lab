@@ -1,3 +1,13 @@
+---
+status: superseded
+research_direction: tapta-task-aware-prompt-adaptation
+superseded_by: docs/research/methods/dynatree-cre/METHOD_SPEC.md
+superseded_date: 2026-11-27
+reason: research-direction-migration
+---
+
+> Tài liệu này mô tả hướng nghiên cứu trước đây và đã được thay thế bởi đặc tả DynaTree-CRE. Nội dung được giữ lại nhằm bảo tồn lịch sử nghiên cứu và hỗ trợ tái lập các thí nghiệm đã thực hiện.
+
 # TAPTA P5 Architecture Specification: Whitened-Router & Contrastive-Margin Tree
 
 **Method Name:** TAPTA P5  
