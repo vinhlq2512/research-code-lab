@@ -38,37 +38,33 @@ class TaskAgnosticRouter:
     def _to_tensor(arr: np.ndarray, device: torch.device, dtype: torch.dtype) -> torch.Tensor:
         return torch.from_numpy(arr).to(device=device, dtype=dtype)
 
-    def route(
+    def compute_retrieval_scores(
         self,
         queries: torch.Tensor,
         tree: DynamicSemanticTree,
-        prompt_bank: HierarchicalPromptBank,
         strategy_override: str | None = None,
-        gold_relation_ids: torch.Tensor | None = None,
         leaf_protos_override: np.ndarray | None = None,
         cluster_protos_override: np.ndarray | None = None,
-    ) -> RoutingResult:
-        """Route queries [B, D] over observed tree nodes and compose prompts [B, L, d]."""
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor | None, list[int], list[str], list[str]]:
+        """Compute raw retrieval scores and normalized probabilities over observed leaves."""
         strategy = strategy_override or self.config.strategy
         device = queries.device
         dtype = queries.dtype
-        batch_size = queries.size(0)
 
         ordered_rel_ids = tree.seen_relation_ids()
         ordered_leaf_ids = [tree.relation_to_node[r] for r in ordered_rel_ids]
         ordered_cluster_ids = tree.cluster_ids()
         cluster_idx_map = {cid: idx for idx, cid in enumerate(ordered_cluster_ids)}
 
-        # Gather leaf & cluster prototypes (optionally from retrieval space)
         leaf_mat = (
             leaf_protos_override
             if leaf_protos_override is not None
             else np.stack([tree.nodes[lid].prototype for lid in ordered_leaf_ids], axis=0)
         )
-        leaf_protos = self._to_tensor(leaf_mat, device=device, dtype=dtype)  # [R, D]
+        leaf_protos = self._to_tensor(leaf_mat, device=device, dtype=dtype)
 
         norm_q = F.normalize(queries, p=2, dim=-1, eps=1e-12)
-        leaf_sims = torch.mm(norm_q, leaf_protos.t())  # [B, R]
+        leaf_sims = torch.mm(norm_q, leaf_protos.t())
 
         tau_c = max(float(self.config.cluster_temperature), 1e-3)
         tau_r = max(float(self.config.relation_temperature), 1e-3)
@@ -80,9 +76,9 @@ class TaskAgnosticRouter:
                 if cluster_protos_override is not None
                 else np.stack([tree.nodes[cid].prototype for cid in ordered_cluster_ids], axis=0)
             )
-            cluster_protos = self._to_tensor(cluster_mat, device=device, dtype=dtype)  # [C, D]
-            cluster_sims = torch.mm(norm_q, cluster_protos.t())  # [B, C]
-            log_cluster_probs = F.log_softmax(cluster_sims / tau_c, dim=-1)  # [B, C]
+            cluster_protos = self._to_tensor(cluster_mat, device=device, dtype=dtype)
+            cluster_sims = torch.mm(norm_q, cluster_protos.t())
+            log_cluster_probs = F.log_softmax(cluster_sims / tau_c, dim=-1)
             cluster_probs = torch.exp(log_cluster_probs)
 
             eta = float(self.config.cluster_size_eta) if strategy == "size_corrected_hierarchical" else 0.0
@@ -95,6 +91,7 @@ class TaskAgnosticRouter:
                 size_term = eta * float(np.log(max(1, len(member_positions)))) if eta != 0.0 else 0.0
                 log_global_leaf[:, member_positions] = log_cluster_probs[:, c_idx : c_idx + 1] + log_cond + size_term
 
+            raw_scores = log_global_leaf
             rel_probs = F.softmax(log_global_leaf, dim=-1)
         elif strategy == "hybrid_tree_routing":
             gamma = float(self.config.hybrid_cluster_gamma)
@@ -115,11 +112,47 @@ class TaskAgnosticRouter:
                 hybrid_scores = leaf_sims + gamma * cluster_sims[:, leaf_to_cidx_t]
             else:
                 hybrid_scores = leaf_sims
+            raw_scores = hybrid_scores
             rel_probs = F.softmax(hybrid_scores / tau_r, dim=-1)
         elif strategy in ("flat_hard", "flat_soft_topk", "dense_soft", "oracle_route"):
+            raw_scores = leaf_sims
             rel_probs = F.softmax(leaf_sims / tau_r, dim=-1)
         else:
             raise ValueError(f"Unsupported routing strategy for prompt routing: {strategy}")
+
+        return raw_scores, rel_probs, cluster_probs, ordered_rel_ids, ordered_leaf_ids, ordered_cluster_ids
+
+    def route(
+        self,
+        queries: torch.Tensor,
+        tree: DynamicSemanticTree,
+        prompt_bank: HierarchicalPromptBank,
+        strategy_override: str | None = None,
+        gold_relation_ids: torch.Tensor | None = None,
+        leaf_protos_override: np.ndarray | None = None,
+        cluster_protos_override: np.ndarray | None = None,
+    ) -> RoutingResult:
+        """Route queries [B, D] over observed tree nodes and compose prompts [B, L, d]."""
+        strategy = strategy_override or self.config.strategy
+        device = queries.device
+        dtype = queries.dtype
+        batch_size = queries.size(0)
+
+        (
+            _raw_scores,
+            rel_probs,
+            cluster_probs,
+            ordered_rel_ids,
+            ordered_leaf_ids,
+            ordered_cluster_ids,
+        ) = self.compute_retrieval_scores(
+            queries=queries,
+            tree=tree,
+            strategy_override=strategy,
+            leaf_protos_override=leaf_protos_override,
+            cluster_protos_override=cluster_protos_override,
+        )
+        cluster_idx_map = {cid: idx for idx, cid in enumerate(ordered_cluster_ids)}
 
         # Entropy over global relation probability distribution
         routing_entropy = -(rel_probs * torch.log(rel_probs.clamp(min=1e-12))).sum(dim=-1)

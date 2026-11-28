@@ -55,6 +55,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--insertion-threshold", type=float, default=None)
     parser.add_argument("--prompt-length", type=int, default=None)
     parser.add_argument("--routing-strategy", type=str, default=None)
+    parser.add_argument("--inference-mode", type=str, default=None)
+    parser.add_argument("--top-k", type=int, default=None)
+    parser.add_argument("--rerank-fusion-mode", type=str, default=None)
+    parser.add_argument("--rerank-fusion-lambda", type=float, default=None)
+    parser.add_argument("--rerank-sweep", action="store_true", help="Evaluate K in {1,3,5,10} x fusion modes at end")
     parser.add_argument("--cluster-size-eta", type=float, default=None)
     parser.add_argument("--hybrid-cluster-gamma", type=float, default=None)
     parser.add_argument("--train-mode", type=str, default=None)
@@ -91,6 +96,14 @@ def main() -> None:
         config.prompt.length = int(args.prompt_length)
     if args.routing_strategy is not None:
         config.routing.strategy = args.routing_strategy
+    if args.inference_mode is not None:
+        config.routing.inference_mode = args.inference_mode
+    if args.top_k is not None:
+        config.routing.top_k = int(args.top_k)
+    if args.rerank_fusion_mode is not None:
+        config.routing.rerank_fusion_mode = args.rerank_fusion_mode
+    if args.rerank_fusion_lambda is not None:
+        config.routing.rerank_fusion_lambda = float(args.rerank_fusion_lambda)
     if args.cluster_size_eta is not None:
         config.routing.cluster_size_eta = float(args.cluster_size_eta)
     if args.hybrid_cluster_gamma is not None:
@@ -139,6 +152,8 @@ def main() -> None:
         resume_path = rp if rp.is_absolute() else REPO_ROOT / rp
 
     metrics = trainer.run(resume_from=resume_path)
+    if args.rerank_sweep:
+        trainer.evaluate_rerank_sweep()
     print(json.dumps({
         "variant": metrics["variant"],
         "dataset": metrics["dataset"],

@@ -177,6 +177,85 @@ class DynaTreeContinualTrainer:
             )
         self.model.classifier.expand_for_task(sorted(task.relations), init_vectors=init_vecs)
 
+    def _train_step_candidate_rerank(
+        self, batch: dict[str, torch.Tensor], rel_ids: torch.Tensor
+    ) -> tuple[torch.Tensor, list[list[int]]]:
+        """Candidate-aware training: global CE on P_{r_true} + candidate CE over {r_true} U hard negs."""
+        input_ids = batch["input_ids"]
+        attention_mask = batch["attention_mask"]
+        e1_idx = batch["e1_indices"]
+        e2_idx = batch["e2_indices"]
+        bsz = input_ids.size(0)
+        device = input_ids.device
+
+        # 1. Stationary retrieval to find hard negatives (zero gradient through retrieval)
+        with torch.no_grad():
+            raw_q = self.model.encode_stationary_queries(input_ids, attention_mask, e1_idx, e2_idx)
+            ret_q = self.model.prototype_bank.transform_queries_for_retrieval(raw_q)
+            ord_rels = self.model.tree.seen_relation_ids()
+            ord_clus = self.model.tree.cluster_ids()
+            leaf_ret, clus_ret = self.model.prototype_bank.get_retrieval_prototypes(
+                self.model.tree, ord_rels, ord_clus
+            )
+            raw_scores, _, _, _, _, _ = self.model.router.compute_retrieval_scores(
+                queries=ret_q,
+                tree=self.model.tree,
+                leaf_protos_override=leaf_ret,
+                cluster_protos_override=clus_ret,
+            )
+            k_ret = min(int(self.config.routing.top_k), len(ord_rels))
+            _, ret_topk_pos = torch.topk(raw_scores, k=k_ret, dim=-1)
+            ret_topk_rels = [[ord_rels[p] for p in row] for row in ret_topk_pos.cpu().tolist()]
+
+            m_eff = min(int(self.config.routing.rerank_train_cand_k), len(ord_rels))
+            ranked_all = torch.argsort(raw_scores, dim=-1, descending=True).cpu().tolist()
+            train_cands: list[list[int]] = []
+            for r_true, rank_row in zip(rel_ids.tolist(), ranked_all):
+                cands = [int(r_true)]
+                for pos in rank_row:
+                    cand_r = int(ord_rels[pos])
+                    if cand_r != int(r_true):
+                        cands.append(cand_r)
+                    if len(cands) >= m_eff:
+                        break
+                train_cands.append(cands)
+
+        # 2. Positive candidate forward pass (always passes grad into new leaf prompt P_{r_true})
+        pos_prompts = self.model.prompt_bank.compose_for_relation_ids(rel_ids, self.model.tree)
+        z_pos = self.model.query_encoder.forward_prompted(
+            input_ids, attention_mask, e1_idx, e2_idx, pos_prompts
+        )
+        targets = self.model.classifier.relation_ids_to_slots(rel_ids)
+        loss_global = F.cross_entropy(self.model.classifier(z_pos), targets)
+
+        if m_eff <= 1:
+            return loss_global, ret_topk_rels
+
+        # 3. Hard negative candidate forward passes for candidate-conditioned contrast
+        neg_rels = torch.tensor([c[1:] for c in train_cands], dtype=torch.long, device=device)  # [B, M-1]
+        n_neg = neg_rels.size(1)
+        neg_prompts = self.model.prompt_bank.compose_for_relation_ids(neg_rels.reshape(-1), self.model.tree)
+        z_neg = self.model.query_encoder.forward_prompted(
+            input_ids.repeat_interleave(n_neg, dim=0),
+            attention_mask.repeat_interleave(n_neg, dim=0),
+            e1_idx.repeat_interleave(n_neg, dim=0),
+            e2_idx.repeat_interleave(n_neg, dim=0),
+            neg_prompts,
+        ).view(bsz, n_neg, self.model.rep_dim)
+
+        cand_z = torch.cat([z_pos.unsqueeze(1), z_neg], dim=1)  # [B, M, D]
+        cand_z_norm = F.normalize(cand_z, p=2, dim=-1, eps=1e-12)
+        cand_slots = torch.tensor(
+            [[self.model.classifier.relation_to_slot[r] for r in row] for row in train_cands],
+            dtype=torch.long,
+            device=device,
+        )
+        all_w = F.normalize(self.model.classifier._all_weights(), p=2, dim=-1, eps=1e-12)
+        cand_w = all_w[cand_slots]  # [B, M, D]
+        cand_logits = self.model.classifier.scale * (cand_z_norm * cand_w).sum(dim=-1)
+        loss_cand = F.cross_entropy(cand_logits, torch.zeros(bsz, dtype=torch.long, device=device))
+        return 0.5 * loss_global + 0.5 * loss_cand, ret_topk_rels
+
     def _phase_e_train_task(self, task: ProtocolV1Task) -> dict[str, Any]:
         if self.model.is_prototype_only:
             return {
@@ -238,22 +317,28 @@ class DynaTreeContinualTrainer:
                 gold_arg = rel_ids if strategy_override == "oracle_route" else None
 
                 optimizer.zero_grad()
-                out = self.model.forward_batch(
-                    batch["input_ids"],
-                    batch["attention_mask"],
-                    batch["e1_indices"],
-                    batch["e2_indices"],
-                    strategy_override=strategy_override,
-                    gold_relation_ids=gold_arg,
-                )
-                targets = self.model.classifier.relation_ids_to_slots(rel_ids)
-                loss = F.cross_entropy(out["logits"], targets)
+                if self.config.routing.inference_mode == "candidate_rerank" and strategy_override is None:
+                    loss, topk_lists = self._train_step_candidate_rerank(batch, rel_ids)
+                    has_routing = True
+                else:
+                    out = self.model.forward_batch(
+                        batch["input_ids"],
+                        batch["attention_mask"],
+                        batch["e1_indices"],
+                        batch["e2_indices"],
+                        strategy_override=strategy_override,
+                        gold_relation_ids=gold_arg,
+                    )
+                    targets = self.model.classifier.relation_ids_to_slots(rel_ids)
+                    loss = F.cross_entropy(out["logits"], targets)
+                    has_routing = out["routing"] is not None
+                    topk_lists = (
+                        out["routing"].selected_relation_ids.detach().cpu().tolist() if has_routing else []
+                    )
                 loss.backward()
 
                 # Track routing recall and zero-grad prompt steps during training
-                routing = out["routing"]
-                if routing is not None:
-                    topk_lists = routing.selected_relation_ids.detach().cpu().tolist()
+                if has_routing:
                     for r_true, topk_r in zip(rel_ids.tolist(), topk_lists):
                         total_samples_seen += 1
                         if r_true in topk_r:
@@ -285,7 +370,8 @@ class DynaTreeContinualTrainer:
 
         # Populate prompted NCM class prototypes after task training finishes
         self.model.eval()
-        ncm_feats = self._compute_prompted_class_means(task, use_effective_leaf_prompt=False)
+        use_eff = self.config.routing.inference_mode == "candidate_rerank"
+        ncm_feats = self._compute_prompted_class_means(task, use_effective_leaf_prompt=use_eff)
         self.model.classifier.update_ncm_prototypes(ncm_feats)
 
         zero_grad_new_leaf_count = sum(1 for c in leaf_nonzero_grad_counts.values() if c == 0)
@@ -467,6 +553,28 @@ class DynaTreeContinualTrainer:
                 diag_records, self.model.tree, self.stream.relation_to_task, ks=(1, 3, 5, 10)
             )
 
+        rerank_diag: dict[str, Any] = {}
+        if self.config.routing.inference_mode == "candidate_rerank" and all_topk:
+            n_tot = len(all_true)
+            hits_k = [(rt in tk) for rt, tk in zip(all_true, all_topk)]
+            n_hit = sum(1 for h in hits_k if h)
+            ncm_hit_ok = sum(
+                1 for rt, pn, h in zip(all_true, all_ncm_pred, hits_k) if h and pn == rt
+            )
+            cos_hit_ok = sum(
+                1 for rt, pc, h in zip(all_true, all_cos_pred, hits_k) if h and pc == rt
+            )
+            rerank_diag = {
+                "top_k": int(self.config.routing.top_k),
+                "fusion_mode": self.config.routing.rerank_fusion_mode,
+                "fusion_lambda": float(self.config.routing.rerank_fusion_lambda),
+                "candidate_recall_at_k": float(n_hit / n_tot) if n_tot else 0.0,
+                "conditional_rerank_ncm_acc": float(ncm_hit_ok / n_hit) if n_hit else 0.0,
+                "conditional_rerank_cos_acc": float(cos_hit_ok / n_hit) if n_hit else 0.0,
+                "candidate_hits": int(n_hit),
+                "num_samples": int(n_tot),
+            }
+
         return {
             "cosine_whole_accuracy": cos_whole,
             "cosine_whole_macro_f1": compute_macro_f1(all_true, all_cos_pred),
@@ -482,6 +590,7 @@ class DynaTreeContinualTrainer:
                 for j, r in per_task_results.items()
             },
             "routing_diagnostics": routing_diag,
+            "rerank_diagnostics": rerank_diag,
             "m7_1_decomposition": m7_1_decomp,
             "confusion_cosine": confusion_cos,
             "confusion_ncm": confusion_ncm,
@@ -494,6 +603,9 @@ class DynaTreeContinualTrainer:
     def run(self, resume_from: str | Path | None = None) -> dict[str, Any]:
         """Run full continual task stream (with optional clean checkpoint resume)."""
         set_deterministic_seed(self.config.experiment.seed)
+        self.model.query_encoder.reset_forward_counters()
+        if torch.cuda.is_available() and self.model.device.type == "cuda":
+            torch.cuda.reset_peak_memory_stats(self.model.device)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.config.save_yaml(self.output_dir / "resolved_config.yaml")
 
@@ -644,16 +756,25 @@ class DynaTreeContinualTrainer:
                 for p in self.model.prototype_bank.prototypes.values()
             )
         )
+        peak_mem = (
+            int(torch.cuda.max_memory_allocated(self.model.device))
+            if torch.cuda.is_available() and self.model.device.type == "cuda"
+            else 0
+        )
         resource_payload = {
             "backbone_params_frozen": int(sum(p.numel() for p in self.model.query_encoder.parameters())),
             "total_persistent_adapter_and_state_params": total_persistent_params,
             "memory_bytes": final_stage["memory_bytes"],
+            "peak_memory_bytes": peak_mem,
             "final_checkpoint_bytes": final_stage["checkpoint_bytes"],
             "total_train_time_sec": float(sum(r["train_time_sec"] for r in self.stage_records)),
             "total_eval_time_sec": float(sum(r["eval_stats"]["eval_time_sec"] for r in self.stage_records)),
             "final_inference_latency_ms_per_sample": final_stage["eval_stats"][
                 "inference_latency_ms_per_sample"
             ],
+            "stationary_forward_samples": int(self.model.query_encoder.stationary_forward_samples),
+            "prompted_forward_samples": int(self.model.query_encoder.prompted_forward_samples),
+            "total_bert_sample_forward_passes": int(self.model.query_encoder.total_forward_samples),
         }
         write_json(self.output_dir / "resource_metrics.json", resource_payload)
         write_json(
@@ -667,3 +788,105 @@ class DynaTreeContinualTrainer:
             },
         )
         return metrics_payload
+
+    @torch.no_grad()
+    def evaluate_rerank_sweep(
+        self,
+        ks: tuple[int, ...] = (1, 3, 5, 10),
+        modes: tuple[str, ...] = ("retrieval_only", "prompted_only", "fusion"),
+        fusion_lambda: float | None = None,
+    ) -> dict[str, Any]:
+        """Evaluate K in ks x fusion modes from a single batched K=max(ks) pass (zero leakage)."""
+        self.model.eval()
+        max_k = min(max(ks), len(self.model.tree.seen_relation_ids()))
+        lam = (
+            float(fusion_lambda)
+            if fusion_lambda is not None
+            else float(self.config.routing.rerank_fusion_lambda)
+        )
+
+        all_true: list[int] = []
+        cand_ids_list: list[torch.Tensor] = []
+        ret_list: list[torch.Tensor] = []
+        p_ncm_list: list[torch.Tensor] = []
+        p_cos_list: list[torch.Tensor] = []
+
+        bs = self.config.training.eval_batch_size
+        t0 = time.perf_counter()
+        for task in self.stream.tasks:
+            samples = list(task.test_samples)
+            for i in range(0, len(samples), bs):
+                chunk = samples[i : i + bs]
+                batch, rel_ids = self._collate_with_rel_ids(chunk)
+                out = self.model.forward_candidate_rerank(
+                    batch["input_ids"],
+                    batch["attention_mask"],
+                    batch["e1_indices"],
+                    batch["e2_indices"],
+                    top_k_override=max_k,
+                    fusion_mode_override="fusion",
+                )
+                det = out["rerank_details"]
+                all_true.extend(rel_ids.cpu().tolist())
+                cand_ids_list.append(det["cand_rel_ids"].cpu())
+                ret_list.append(det["ret_scores"].cpu())
+                p_ncm_list.append(det["prompt_ncm_scores"].cpu())
+                p_cos_list.append(det["prompt_cos_scores"].cpu())
+        sweep_time_sec = float(time.perf_counter() - t0)
+
+        all_cands = torch.cat(cand_ids_list, dim=0)
+        all_ret = torch.cat(ret_list, dim=0)
+        all_p_ncm = torch.cat(p_ncm_list, dim=0)
+        all_p_cos = torch.cat(p_cos_list, dim=0)
+        n_tot = len(all_true)
+
+        cells: list[dict[str, Any]] = []
+        for k in ks:
+            k_eff = min(k, max_k)
+            ck = all_cands[:, :k_eff]
+            rk = all_ret[:, :k_eff]
+            pnk = all_p_ncm[:, :k_eff]
+            pck = all_p_cos[:, :k_eff]
+
+            hits = [int(rt) in ck_row for rt, ck_row in zip(all_true, ck.tolist())]
+            n_hit = sum(1 for h in hits if h)
+            cand_recall = float(n_hit / n_tot) if n_tot else 0.0
+
+            for mode in modes:
+                fn = self.model.fuse_rerank_scores(rk, pnk, mode, lam)
+                fc = self.model.fuse_rerank_scores(rk, pck, mode, lam)
+                idx_n = torch.argmax(fn, dim=-1).tolist()
+                idx_c = torch.argmax(fc, dim=-1).tolist()
+                pred_n = [int(ck[row_i, col_i].item()) for row_i, col_i in enumerate(idx_n)]
+                pred_c = [int(ck[row_i, col_i].item()) for row_i, col_i in enumerate(idx_c)]
+
+                ncm_ok = sum(1 for rt, pn in zip(all_true, pred_n) if pn == rt)
+                cos_ok = sum(1 for rt, pc in zip(all_true, pred_c) if pc == rt)
+                cond_ncm_ok = sum(1 for rt, pn, h in zip(all_true, pred_n, hits) if h and pn == rt)
+                cond_cos_ok = sum(1 for rt, pc, h in zip(all_true, pred_c, hits) if h and pc == rt)
+
+                cells.append({
+                    "k": int(k),
+                    "k_effective": int(k_eff),
+                    "fusion_mode": mode,
+                    "fusion_lambda": float(lam),
+                    "num_samples": int(n_tot),
+                    "candidate_recall_at_k": cand_recall,
+                    "conditional_rerank_ncm_acc": float(cond_ncm_ok / n_hit) if n_hit else 0.0,
+                    "conditional_rerank_cos_acc": float(cond_cos_ok / n_hit) if n_hit else 0.0,
+                    "final_ncm_whole_accuracy": float(ncm_ok / n_tot) if n_tot else 0.0,
+                    "final_cos_whole_accuracy": float(cos_ok / n_tot) if n_tot else 0.0,
+                })
+
+        sweep_payload = {
+            "experiment_id": self.config.experiment.experiment_id,
+            "variant": self.config.method.variant,
+            "dataset": self.config.experiment.dataset,
+            "task_distribution": self.config.experiment.task_distribution,
+            "seed": int(self.config.experiment.seed),
+            "max_k_evaluated": int(max_k),
+            "sweep_eval_time_sec": sweep_time_sec,
+            "cells": cells,
+        }
+        write_json(self.output_dir / "rerank_sweep.json", sweep_payload)
+        return sweep_payload

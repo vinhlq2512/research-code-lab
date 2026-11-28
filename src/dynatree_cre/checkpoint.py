@@ -100,7 +100,16 @@ def load_dynatree_checkpoint(
     cur_cfg = config.to_dict()
     defaults_compat = {
         "prototype": {"retrieval_similarity_space": None},
-        "routing": {"cluster_size_eta": 0.0, "hybrid_cluster_gamma": 0.0},
+        "routing": {
+            "cluster_size_eta": 0.0,
+            "hybrid_cluster_gamma": 0.0,
+            "inference_mode": "soft_mix",
+            "rerank_fusion_mode": "fusion",
+            "rerank_fusion_lambda": 0.5,
+            "rerank_score_norm": "zscore",
+            "rerank_forward_chunk_size": 128,
+            "rerank_train_cand_k": 4,
+        },
     }
     for section in ("method", "prototype", "tree", "prompt", "routing", "classifier", "memory"):
         s_sec = dict(saved_cfg.get(section) or {})

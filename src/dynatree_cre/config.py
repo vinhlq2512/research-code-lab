@@ -66,6 +66,12 @@ class RoutingConfig:
     relation_temperature: float = 0.2
     cluster_size_eta: float = 0.0
     hybrid_cluster_gamma: float = 0.0
+    inference_mode: str = "soft_mix"  # soft_mix | candidate_rerank
+    rerank_fusion_mode: str = "fusion"  # retrieval_only | prompted_only | fusion
+    rerank_fusion_lambda: float = 0.5
+    rerank_score_norm: str = "zscore"  # zscore | minmax | none
+    rerank_forward_chunk_size: int = 128
+    rerank_train_cand_k: int = 4
     use_task_id: bool = False
     use_gold_relation: bool = False
 
@@ -191,6 +197,14 @@ class DynaTreeConfig:
             raise ValueError(f"Unsupported routing.train_mode: {self.routing.train_mode}")
         if self.routing.top_k < 1:
             raise ValueError("routing.top_k must be >= 1.")
+        if self.routing.inference_mode not in ("soft_mix", "candidate_rerank"):
+            raise ValueError(f"Unsupported routing.inference_mode: {self.routing.inference_mode}")
+        if self.routing.rerank_fusion_mode not in ("retrieval_only", "prompted_only", "fusion"):
+            raise ValueError(f"Unsupported routing.rerank_fusion_mode: {self.routing.rerank_fusion_mode}")
+        if not (0.0 <= float(self.routing.rerank_fusion_lambda) <= 1.0):
+            raise ValueError("routing.rerank_fusion_lambda must be in [0.0, 1.0].")
+        if self.routing.rerank_score_norm not in ("zscore", "minmax", "none"):
+            raise ValueError(f"Unsupported routing.rerank_score_norm: {self.routing.rerank_score_norm}")
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

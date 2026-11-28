@@ -126,6 +126,29 @@ class HierarchicalPromptBank(nn.Module):
             prompt = prompt + self.root_prompt
         return prompt
 
+    def compose_for_relation_ids(
+        self, relation_ids: torch.Tensor, tree: DynamicSemanticTree
+    ) -> torch.Tensor:
+        """Batch-compose independent prompt paths P_r [N, L, d] for a 1D tensor of relation IDs."""
+        flat_ids = [int(r) for r in relation_ids.detach().cpu().tolist()]
+        leaf_list = [self.leaf_prompts[tree.relation_to_node[r]] for r in flat_ids]
+        composed = torch.stack(leaf_list, dim=0)
+        if self.config.use_cluster_prompts:
+            c_list = []
+            has_any_cluster = False
+            for r in flat_ids:
+                cid = tree.nodes[tree.relation_to_node[r]].parent_id
+                if cid is not None and cid in self.cluster_prompts:
+                    c_list.append(self.cluster_prompts[cid])
+                    has_any_cluster = True
+                else:
+                    c_list.append(torch.zeros(self.prompt_length, self.hidden_size, device=composed.device, dtype=composed.dtype))
+            if has_any_cluster:
+                composed = composed + torch.stack(c_list, dim=0)
+        if self.config.use_root_prompt and self.root_prompt is not None:
+            composed = composed + self.root_prompt.unsqueeze(0)
+        return composed
+
     def compose_from_weights(
         self,
         leaf_ids_ordered: list[str],

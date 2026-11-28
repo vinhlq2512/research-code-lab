@@ -122,7 +122,17 @@ class StableQueryEncoder(nn.Module):
         else:
             raise ValueError(f"Unsupported representation_strategy: {representation_strategy}")
 
+        self.stationary_forward_samples: int = 0
+        self.prompted_forward_samples: int = 0
         self.to(self.target_device)
+
+    def reset_forward_counters(self) -> None:
+        self.stationary_forward_samples = 0
+        self.prompted_forward_samples = 0
+
+    @property
+    def total_forward_samples(self) -> int:
+        return int(self.stationary_forward_samples + self.prompted_forward_samples)
 
     @staticmethod
     def _resolve_device(device: str | torch.device) -> torch.device:
@@ -179,6 +189,7 @@ class StableQueryEncoder(nn.Module):
     ) -> torch.Tensor:
         """Compute L2-normalized stationary query q_raw(x) without prompts or dropout."""
         self.encoder.eval()
+        self.stationary_forward_samples += int(input_ids.size(0))
         outputs = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
         raw = self._pool_sequence(
             outputs.last_hidden_state,
@@ -199,6 +210,7 @@ class StableQueryEncoder(nn.Module):
     ) -> torch.Tensor:
         """Run frozen backbone with prepended soft prompts while keeping gradients to prompt_embeds."""
         self.encoder.eval()
+        self.prompted_forward_samples += int(input_ids.size(0))
         batch_size, prompt_len, hidden_dim = prompt_embeds.shape
         if hidden_dim != self.hidden_size:
             raise ValueError(f"Prompt hidden dim {hidden_dim} != encoder hidden_size {self.hidden_size}")
