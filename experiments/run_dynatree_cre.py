@@ -64,6 +64,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--analytic-projection-mode", type=str, default=None)
     parser.add_argument("--analytic-projection-dim", type=int, default=None)
     parser.add_argument("--analytic-ridge-lambda", type=float, default=None)
+    parser.add_argument("--use-query-adapter", action="store_true")
+    parser.add_argument("--query-adapter-mode", type=str, default=None)
+    parser.add_argument("--query-adapter-epochs", type=int, default=None)
+    parser.add_argument("--query-adapter-lr", type=float, default=None)
+    parser.add_argument("--query-adapter-drift-weight", type=float, default=None)
     parser.add_argument("--rerank-sweep", action="store_true", help="Evaluate K in {1,3,5,10} x fusion modes at end")
     parser.add_argument("--cluster-size-eta", type=float, default=None)
     parser.add_argument("--hybrid-cluster-gamma", type=float, default=None)
@@ -119,6 +124,16 @@ def main() -> None:
         config.prototype.analytic_projection_dim = int(args.analytic_projection_dim)
     if args.analytic_ridge_lambda is not None:
         config.prototype.analytic_ridge_lambda = float(args.analytic_ridge_lambda)
+    if args.use_query_adapter:
+        config.prototype.use_query_adapter = True
+    if args.query_adapter_mode is not None:
+        config.prototype.query_adapter_mode = args.query_adapter_mode
+    if args.query_adapter_epochs is not None:
+        config.prototype.query_adapter_epochs = int(args.query_adapter_epochs)
+    if args.query_adapter_lr is not None:
+        config.prototype.query_adapter_lr = float(args.query_adapter_lr)
+    if args.query_adapter_drift_weight is not None:
+        config.prototype.query_adapter_drift_weight = float(args.query_adapter_drift_weight)
     if args.cluster_size_eta is not None:
         config.routing.cluster_size_eta = float(args.cluster_size_eta)
     if args.hybrid_cluster_gamma is not None:

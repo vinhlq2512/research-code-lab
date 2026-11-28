@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -13,6 +14,7 @@ from src.dynatree_cre.classifier import ExpandableCosineClassifier
 from src.dynatree_cre.config import DynaTreeConfig
 from src.dynatree_cre.prototype_bank import SemanticPrototypeBank
 from src.dynatree_cre.prompt_bank import HierarchicalPromptBank
+from src.dynatree_cre.query_adapter import ResidualQueryAdapter
 from src.dynatree_cre.query_encoder import StableQueryEncoder
 from src.dynatree_cre.router import RoutingResult, TaskAgnosticRouter
 from src.dynatree_cre.tree import DynamicSemanticTree
@@ -68,10 +70,29 @@ class DynaTreeCREModel(nn.Module):
             if config.prototype.use_analytic_retrieval
             else None
         )
+        self.query_adapter: ResidualQueryAdapter | None = (
+            ResidualQueryAdapter(
+                rep_dim=self.rep_dim,
+                hidden_dim=config.prototype.query_adapter_hidden_dim,
+                residual_scale=config.prototype.query_adapter_residual_scale,
+            ).to(self.device)
+            if config.prototype.use_query_adapter
+            else None
+        )
 
     @property
     def is_prototype_only(self) -> bool:
-        return self.config.routing.strategy == "none" or self.config.method.variant in ("DT-C0", "DT-C0.5")
+        return self.config.routing.strategy == "none" or self.config.method.variant in (
+            "DT-C0",
+            "DT-C0.5",
+            "DT-C0.6a",
+            "DT-C0.6b",
+        )
+
+    def adapt_queries_for_retrieval(self, raw_q: torch.Tensor) -> torch.Tensor:
+        if self.query_adapter is not None:
+            return self.query_adapter(raw_q)
+        return self.prototype_bank.transform_queries_for_retrieval(raw_q)
 
     def get_retrieval_context(
         self, raw_q: torch.Tensor
@@ -79,9 +100,29 @@ class DynaTreeCREModel(nn.Module):
         """Gather retrieval prototypes and analytic scores (when enabled) cleanly."""
         ordered_rel_ids = self.tree.seen_relation_ids()
         ordered_cluster_ids = self.tree.cluster_ids()
-        leaf_ret, cluster_ret = self.prototype_bank.get_retrieval_prototypes(
-            self.tree, ordered_rel_ids, ordered_cluster_ids
-        )
+        if self.query_adapter is not None:
+            raw_leaf_mat = np.stack(
+                [self.prototype_bank.prototypes[r].raw_prototype_vector for r in ordered_rel_ids], axis=0
+            )
+            with torch.no_grad():
+                raw_leaf_t = torch.from_numpy(raw_leaf_mat).to(device=self.device, dtype=torch.float32)
+                adapted_leaf_t = self.query_adapter(raw_leaf_t)
+                leaf_ret = adapted_leaf_t.detach().cpu().numpy()
+            if ordered_cluster_ids:
+                c_vecs = []
+                for cid in ordered_cluster_ids:
+                    c_rels = [int(self.tree.nodes[lid].relation_id) for lid in self.tree.nodes[cid].children_ids]
+                    pos_list = [ordered_rel_ids.index(r) for r in c_rels]
+                    mean_c = leaf_ret[pos_list].mean(axis=0)
+                    norm = float(np.linalg.norm(mean_c))
+                    c_vecs.append((mean_c / max(norm, 1e-12)).astype(np.float32))
+                cluster_ret = np.stack(c_vecs, axis=0)
+            else:
+                cluster_ret = None
+        else:
+            leaf_ret, cluster_ret = self.prototype_bank.get_retrieval_prototypes(
+                self.tree, ordered_rel_ids, ordered_cluster_ids
+            )
         analytic_scores: torch.Tensor | None = None
         if self.analytic_head is not None and self.analytic_head.ordered_rel_ids:
             analytic_scores, _ = self.analytic_head.predict(raw_q, target_rel_order=ordered_rel_ids)
@@ -109,11 +150,15 @@ class DynaTreeCREModel(nn.Module):
         """Run full query -> router -> prompt composition -> prompted encoder -> cosine logits."""
         raw_q = self.encode_stationary_queries(input_ids, attention_mask, e1_indices, e2_indices)
         transformed_q = self.prototype_bank.transform_queries(raw_q)
-        retrieval_q = self.prototype_bank.transform_queries_for_retrieval(raw_q)
+        retrieval_q = self.adapt_queries_for_retrieval(raw_q)
 
         if self.is_prototype_only:
             if self.analytic_head is not None:
                 sims, ordered_ids = self.analytic_head.predict(raw_q)
+            elif self.query_adapter is not None:
+                ordered_ids, _, leaf_ret, _, _ = self.get_retrieval_context(raw_q)
+                p_t = torch.from_numpy(leaf_ret).to(device=retrieval_q.device, dtype=retrieval_q.dtype)
+                sims = torch.mm(F.normalize(retrieval_q, p=2, dim=-1, eps=1e-12), p_t.t())
             else:
                 sims, ordered_ids = self.prototype_bank.predict_nearest_prototype(raw_q)
             return {
@@ -228,7 +273,7 @@ class DynaTreeCREModel(nn.Module):
         if transformed_q is None:
             transformed_q = self.prototype_bank.transform_queries(raw_q)
         if retrieval_q is None:
-            retrieval_q = self.prototype_bank.transform_queries_for_retrieval(raw_q)
+            retrieval_q = self.adapt_queries_for_retrieval(raw_q)
 
         ordered_rel_ids, ordered_cluster_ids, leaf_ret, cluster_ret, analytic_scores = (
             self.get_retrieval_context(raw_q)
@@ -369,6 +414,10 @@ class DynaTreeCREModel(nn.Module):
             snaps[f"prompt_bank.{name}"] = t
         for name, t in self.classifier.snapshot_frozen_weights().items():
             snaps[f"classifier.{name}"] = t
+        if self.query_adapter is not None:
+            for name, param in self.query_adapter.named_parameters():
+                if not param.requires_grad:
+                    snaps[f"query_adapter.{name}"] = param.detach().clone().cpu()
         return snaps
 
     def assert_frozen_unchanged(self, before: dict[str, torch.Tensor]) -> None:
@@ -379,6 +428,9 @@ class DynaTreeCREModel(nn.Module):
             current[f"prompt_bank.{name}"] = param.detach().cpu()
         for name, t in self.classifier.snapshot_frozen_weights().items():
             current[f"classifier.{name}"] = t
+        if self.query_adapter is not None:
+            for name, param in self.query_adapter.named_parameters():
+                current[f"query_adapter.{name}"] = param.detach().cpu()
 
         for key, snap in before.items():
             if not torch.equal(snap, current[key]):
@@ -387,20 +439,23 @@ class DynaTreeCREModel(nn.Module):
     def memory_breakdown_bytes(self) -> dict[str, int]:
         proto_b = self.prototype_bank.memory_bytes()
         analytic_b = self.analytic_head.persistent_bytes() if self.analytic_head is not None else 0
+        adapter_b = self.query_adapter.persistent_bytes() if self.query_adapter is not None else 0
         prompt_b = self.prompt_bank.persistent_bytes() if not self.is_prototype_only else 0
         cls_b = self.classifier.persistent_bytes() if not self.is_prototype_only else 0
         return {
             "persistent_prototype_bytes": proto_b,
             "persistent_analytic_bytes": analytic_b,
+            "persistent_adapter_bytes": adapter_b,
             "persistent_prompt_bytes": prompt_b,
             "classifier_bytes": cls_b,
-            "total_persistent_state_bytes": proto_b + analytic_b + prompt_b + cls_b,
+            "total_persistent_state_bytes": proto_b + analytic_b + adapter_b + prompt_b + cls_b,
         }
 
     def export_state(self) -> dict[str, Any]:
         return {
             "prototype_bank": self.prototype_bank.state_dict(),
             "analytic_head": self.analytic_head.state_dict() if self.analytic_head is not None else None,
+            "query_adapter": self.query_adapter.state_dict() if self.query_adapter is not None else None,
             "tree": self.tree.to_dict(),
             "prompt_bank_state": self.prompt_bank.state_dict(),
             "prompt_bank_extra": self.prompt_bank.extra_state(),
@@ -412,6 +467,9 @@ class DynaTreeCREModel(nn.Module):
         self.prototype_bank = SemanticPrototypeBank.from_state_dict(state["prototype_bank"])
         if state.get("analytic_head") is not None:
             self.analytic_head = IncrementalAnalyticHead.from_state_dict(state["analytic_head"])
+        if state.get("query_adapter") is not None and self.query_adapter is not None:
+            self.query_adapter.load_state_dict(state["query_adapter"], strict=True)
+            self.query_adapter.to(self.device)
         self.tree = DynamicSemanticTree.from_dict(state["tree"])
         self.prompt_bank.restore_from_tree_and_state(
             self.tree, state["prompt_bank_state"], state["prompt_bank_extra"]

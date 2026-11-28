@@ -22,6 +22,7 @@ from src.dynatree_cre.checkpoint import (
 )
 from src.dynatree_cre.config import DynaTreeConfig
 from src.dynatree_cre.diagnostic import compute_m7_routing_decomposition
+from src.dynatree_cre.query_adapter import supervised_contrastive_loss
 from src.dynatree_cre.metrics import (
     PerformanceMatrix,
     compute_accuracy,
@@ -76,6 +77,8 @@ class DynaTreeContinualTrainer:
             seed=config.experiment.seed,
         )
         self.stage_records: list[dict[str, Any]] = []
+        self._last_rel_tensors: dict[int, torch.Tensor] = {}
+        self._last_adapter_stats: dict[str, float] = {"adapter_loss": 0.0, "representation_drift_l2": 0.0}
         self._seen_train_sample_ids: set[str] = set()
 
     def _collate_with_rel_ids(
@@ -142,6 +145,7 @@ class DynaTreeContinualTrainer:
                 by_rel_q[int(r_val)].append(q[row_idx : row_idx + 1].cpu())
 
         rel_tensors = {r: torch.cat(chunks, dim=0) for r, chunks in by_rel_q.items()}
+        self._last_rel_tensors = rel_tensors
         desc_tensors = (
             self._encode_relation_descriptions(task)
             if self.config.prototype.use_relation_description
@@ -163,6 +167,101 @@ class DynaTreeContinualTrainer:
             relation_descriptions=desc_tensors,
             description_weight=desc_w,
         )
+
+    def _train_query_adapter_phase(self, task: ProtocolV1Task) -> dict[str, float]:
+        """Train ResidualQueryAdapter strictly on current-task queries (+ raw prototype anchors if enabled)."""
+        adapter = self.model.query_adapter
+        if adapter is None:
+            return {"adapter_loss": 0.0, "representation_drift_l2": 0.0}
+
+        mode = self.config.prototype.query_adapter_mode
+        if mode == "t1_frozen" and int(task.task_id) > 0:
+            for p in adapter.parameters():
+                p.requires_grad = False
+            adapter.eval()
+            return {"adapter_loss": 0.0, "representation_drift_l2": 0.0}
+
+        device = self.model.device
+        for p in adapter.parameters():
+            p.requires_grad = True
+        adapter.train()
+
+        cur_rels = sorted(int(r) for r in task.relations)
+        old_rels = sorted(r for r in self.model.prototype_bank.prototypes if r not in set(cur_rels))
+        all_rels = old_rels + cur_rels
+        rel_to_slot = {r: idx for idx, r in enumerate(all_rels)}
+
+        cur_raw_np = np.stack(
+            [self.model.prototype_bank.prototypes[r].raw_prototype_vector for r in cur_rels], axis=0
+        )
+        cur_raw_t = torch.from_numpy(cur_raw_np).to(device=device, dtype=torch.float32)
+
+        old_raw_t: torch.Tensor | None = None
+        old_target: torch.Tensor | None = None
+        if old_rels:
+            old_raw_np = np.stack(
+                [self.model.prototype_bank.prototypes[r].raw_prototype_vector for r in old_rels], axis=0
+            )
+            old_raw_t = torch.from_numpy(old_raw_np).to(device=device, dtype=torch.float32)
+            with torch.no_grad():
+                old_target = adapter(old_raw_t).detach()
+
+        xs: list[torch.Tensor] = []
+        ys: list[int] = []
+        for r in cur_rels:
+            qt = self._last_rel_tensors[r]
+            xs.append(qt)
+            ys.extend([rel_to_slot[r]] * int(qt.size(0)))
+        x_all = torch.cat(xs, dim=0).to(device=device, dtype=torch.float32)
+        y_all = torch.tensor(ys, dtype=torch.long, device=device)
+
+        epochs = max(1, int(self.config.prototype.query_adapter_epochs))
+        bs = max(1, int(self.config.training.batch_size))
+        tau = max(float(self.config.prototype.query_adapter_temperature), 1e-3)
+        drift_w = float(self.config.prototype.query_adapter_drift_weight)
+        opt = torch.optim.AdamW(
+            adapter.parameters(), lr=float(self.config.prototype.query_adapter_lr), weight_decay=1e-4
+        )
+
+        last_loss = 0.0
+        n_samples = int(x_all.size(0))
+        for _ in range(epochs):
+            perm = torch.randperm(n_samples, device=device)
+            ep_loss = 0.0
+            steps = 0
+            for st in range(0, n_samples, bs):
+                idx = perm[st : st + bs]
+                xb = x_all[idx]
+                yb = y_all[idx]
+                opt.zero_grad()
+
+                ub = adapter(xb)
+                proto_in = torch.cat([old_raw_t, cur_raw_t], dim=0) if old_raw_t is not None else cur_raw_t
+                all_p = adapter(proto_in)
+                proto_logits = torch.mm(ub, all_p.t()) / tau
+                l_ce = F.cross_entropy(proto_logits, yb)
+                l_sup = supervised_contrastive_loss(ub, yb, temperature=tau)
+                loss = l_ce + 0.5 * l_sup
+                if old_target is not None:
+                    old_now = all_p[: len(old_rels)]
+                    l_drift = ((old_now - old_target) ** 2).sum(dim=-1).mean()
+                    loss = loss + drift_w * l_drift
+                loss.backward()
+                opt.step()
+                ep_loss += float(loss.item())
+                steps += 1
+            last_loss = ep_loss / max(1, steps)
+
+        adapter.eval()
+        drift_l2 = 0.0
+        if old_raw_t is not None and old_target is not None:
+            with torch.no_grad():
+                old_after = adapter(old_raw_t)
+                drift_l2 = float((old_after - old_target).norm(p=2, dim=-1).mean().item())
+        if mode == "t1_frozen":
+            for p in adapter.parameters():
+                p.requires_grad = False
+        return {"adapter_loss": float(last_loss), "representation_drift_l2": drift_l2}
 
     @torch.no_grad()
     def _compute_prompted_class_means(
@@ -556,6 +655,47 @@ class DynaTreeContinualTrainer:
             else {}
         )
         current_rels = set(self.stream.tasks[current_task_id].relations)
+        retrieval_ovn: dict[str, Any] = {}
+        if all_true:
+            ret_preds = (
+                [r[0] for r in all_ranked_top10]
+                if all_ranked_top10
+                else list(all_ncm_pred)
+            )
+            ret_top5 = (
+                [r[:5] for r in all_ranked_top10]
+                if all_ranked_top10
+                else [[p] for p in all_ncm_pred]
+            )
+            old_idx = [i for i, rt in enumerate(all_true) if rt not in current_rels]
+            new_idx = [i for i, rt in enumerate(all_true) if rt in current_rels]
+            retrieval_ovn = {
+                "retrieval_all_top1_acc": float(sum(1 for rt, rp in zip(all_true, ret_preds) if rt == rp) / len(all_true)),
+                "retrieval_old_top1_acc": (
+                    float(sum(1 for i in old_idx if all_true[i] == ret_preds[i]) / len(old_idx))
+                    if old_idx
+                    else None
+                ),
+                "retrieval_new_top1_acc": (
+                    float(sum(1 for i in new_idx if all_true[i] == ret_preds[i]) / len(new_idx))
+                    if new_idx
+                    else None
+                ),
+                "retrieval_all_recall_at_5": float(sum(1 for rt, t5 in zip(all_true, ret_top5) if rt in t5) / len(all_true)),
+                "retrieval_old_recall_at_5": (
+                    float(sum(1 for i in old_idx if all_true[i] in ret_top5[i]) / len(old_idx))
+                    if old_idx
+                    else None
+                ),
+                "retrieval_new_recall_at_5": (
+                    float(sum(1 for i in new_idx if all_true[i] in ret_top5[i]) / len(new_idx))
+                    if new_idx
+                    else None
+                ),
+                "representation_drift_l2": float(self._last_adapter_stats.get("representation_drift_l2", 0.0)),
+                "adapter_loss": float(self._last_adapter_stats.get("adapter_loss", 0.0)),
+            }
+
         confusion_cos = compute_confusion_diagnostics(
             true_relation_ids=all_true,
             pred_relation_ids=all_cos_pred,
@@ -631,6 +771,7 @@ class DynaTreeContinualTrainer:
                 for j, r in per_task_results.items()
             },
             "routing_diagnostics": routing_diag,
+            "retrieval_old_vs_new": retrieval_ovn,
             "rerank_diagnostics": rerank_diag,
             "m7_1_decomposition": m7_1_decomp,
             "confusion_cosine": confusion_cos,
@@ -684,6 +825,7 @@ class DynaTreeContinualTrainer:
 
             # Phase B: Build new relation prototypes
             new_protos = self._phase_b_build_prototypes(task)
+            self._last_adapter_stats = self._train_query_adapter_phase(task)
 
             # Phase C: Update Dynamic Semantic Prompt Tree
             topo_event = self.model.tree.insert_task_relations(
@@ -818,6 +960,14 @@ class DynaTreeContinualTrainer:
             "total_bert_sample_forward_passes": int(self.model.query_encoder.total_forward_samples),
         }
         write_json(self.output_dir / "resource_metrics.json", resource_payload)
+        anchor_policy = (
+            "rehearsal_free_raw_prototype_anchors_only"
+            if self.config.prototype.use_query_adapter
+            and self.config.prototype.query_adapter_mode == "continual_anchor_preserved"
+            else "rehearsal_free_strict_zero_pseudo_replay"
+        )
+        mem_policy = dict(self.config.memory.__dict__)
+        mem_policy["prototype_anchor_policy"] = anchor_policy
         write_json(
             self.output_dir / "manifest.json",
             {
@@ -825,7 +975,7 @@ class DynaTreeContinualTrainer:
                 "dataset_fingerprint": self.stream.dataset_fingerprint,
                 "task_order_fingerprint": self.stream.task_order_fingerprint,
                 "git_info": self.git_info,
-                "memory_policy": self.config.memory.__dict__,
+                "memory_policy": mem_policy,
             },
         )
         return metrics_payload

@@ -31,6 +31,14 @@ class PrototypeConfig:
     analytic_projection_dim: int = 4096
     analytic_projection_seed: int = 2021
     analytic_ridge_lambda: float = 10.0
+    use_query_adapter: bool = False
+    query_adapter_mode: str = "t1_frozen"  # t1_frozen | continual_anchor_preserved
+    query_adapter_hidden_dim: int = 256
+    query_adapter_residual_scale: float = 0.5
+    query_adapter_epochs: int = 20
+    query_adapter_lr: float = 1.0e-3
+    query_adapter_temperature: float = 0.1
+    query_adapter_drift_weight: float = 5.0
     max_seq_length: int = 128
 
 
@@ -173,6 +181,10 @@ class DynaTreeConfig:
         if self.prototype.analytic_projection_mode not in ("identity", "random_relu"):
             raise ValueError(
                 f"Unsupported analytic_projection_mode: {self.prototype.analytic_projection_mode}"
+            )
+        if self.prototype.query_adapter_mode not in ("t1_frozen", "continual_anchor_preserved"):
+            raise ValueError(
+                f"Unsupported query_adapter_mode: {self.prototype.query_adapter_mode}"
             )
         if not (0.0 <= float(self.prototype.description_weight) < 1.0):
             raise ValueError("prototype.description_weight must be in [0.0, 1.0).")
