@@ -107,6 +107,8 @@ class SemanticPrototypeBank:
         relation_queries: dict[int, torch.Tensor],
         task_id: int,
         relation_names: dict[int, str] | None = None,
+        relation_descriptions: dict[int, torch.Tensor] | None = None,
+        description_weight: float = 0.0,
     ) -> dict[int, RelationPrototype]:
         """Compute L2-normalized relation prototypes from current-task query vectors."""
         if not relation_queries:
@@ -131,7 +133,16 @@ class SemanticPrototypeBank:
 
             norm_q = F.normalize(q_tensor, p=2, dim=-1, eps=1e-12)
             mean_vec = norm_q.mean(dim=0).numpy()
-            raw_protos[rel_id] = l2_normalize_np(mean_vec)
+            sample_proto = l2_normalize_np(mean_vec)
+            if (
+                relation_descriptions is not None
+                and rel_id in relation_descriptions
+                and 0.0 < float(description_weight) < 1.0
+            ):
+                desc_np = l2_normalize_np(relation_descriptions[rel_id].detach().cpu().numpy().reshape(-1))
+                w_d = float(description_weight)
+                sample_proto = l2_normalize_np((1.0 - w_d) * sample_proto + w_d * desc_np)
+            raw_protos[rel_id] = sample_proto
             counts[rel_id] = int(q_tensor.size(0))
 
         # Always capture T1 anchor mean once on raw prototypes so dual-space routing works in both directions

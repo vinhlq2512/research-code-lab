@@ -45,6 +45,7 @@ class TaskAgnosticRouter:
         strategy_override: str | None = None,
         leaf_protos_override: np.ndarray | None = None,
         cluster_protos_override: np.ndarray | None = None,
+        analytic_scores_override: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor | None, list[int], list[str], list[str]]:
         """Compute raw retrieval scores and normalized probabilities over observed leaves."""
         strategy = strategy_override or self.config.strategy
@@ -93,9 +94,16 @@ class TaskAgnosticRouter:
 
             raw_scores = log_global_leaf
             rel_probs = F.softmax(log_global_leaf, dim=-1)
-        elif strategy == "hybrid_tree_routing":
+        elif strategy in ("hybrid_tree_routing", "hybrid_analytic_tree", "analytic_retrieval"):
+            if strategy in ("analytic_retrieval", "hybrid_analytic_tree"):
+                if analytic_scores_override is None:
+                    raise ValueError(f"{strategy} requires analytic_scores_override.")
+                base_scores = analytic_scores_override
+            else:
+                base_scores = leaf_sims
+
             gamma = float(self.config.hybrid_cluster_gamma)
-            if ordered_cluster_ids and gamma != 0.0:
+            if strategy != "analytic_retrieval" and ordered_cluster_ids and gamma != 0.0:
                 cluster_mat = (
                     cluster_protos_override
                     if cluster_protos_override is not None
@@ -109,9 +117,9 @@ class TaskAgnosticRouter:
                     dtype=torch.long,
                     device=device,
                 )
-                hybrid_scores = leaf_sims + gamma * cluster_sims[:, leaf_to_cidx_t]
+                hybrid_scores = base_scores + gamma * cluster_sims[:, leaf_to_cidx_t]
             else:
-                hybrid_scores = leaf_sims
+                hybrid_scores = base_scores
             raw_scores = hybrid_scores
             rel_probs = F.softmax(hybrid_scores / tau_r, dim=-1)
         elif strategy in ("flat_hard", "flat_soft_topk", "dense_soft", "oracle_route"):
@@ -131,6 +139,7 @@ class TaskAgnosticRouter:
         gold_relation_ids: torch.Tensor | None = None,
         leaf_protos_override: np.ndarray | None = None,
         cluster_protos_override: np.ndarray | None = None,
+        analytic_scores_override: torch.Tensor | None = None,
     ) -> RoutingResult:
         """Route queries [B, D] over observed tree nodes and compose prompts [B, L, d]."""
         strategy = strategy_override or self.config.strategy
@@ -151,6 +160,7 @@ class TaskAgnosticRouter:
             strategy_override=strategy,
             leaf_protos_override=leaf_protos_override,
             cluster_protos_override=cluster_protos_override,
+            analytic_scores_override=analytic_scores_override,
         )
         cluster_idx_map = {cid: idx for idx, cid in enumerate(ordered_cluster_ids)}
 

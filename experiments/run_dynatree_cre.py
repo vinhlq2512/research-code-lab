@@ -59,6 +59,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--top-k", type=int, default=None)
     parser.add_argument("--rerank-fusion-mode", type=str, default=None)
     parser.add_argument("--rerank-fusion-lambda", type=float, default=None)
+    parser.add_argument("--use-relation-description", action="store_true")
+    parser.add_argument("--description-weight", type=float, default=None)
+    parser.add_argument("--analytic-projection-mode", type=str, default=None)
+    parser.add_argument("--analytic-projection-dim", type=int, default=None)
+    parser.add_argument("--analytic-ridge-lambda", type=float, default=None)
     parser.add_argument("--rerank-sweep", action="store_true", help="Evaluate K in {1,3,5,10} x fusion modes at end")
     parser.add_argument("--cluster-size-eta", type=float, default=None)
     parser.add_argument("--hybrid-cluster-gamma", type=float, default=None)
@@ -104,6 +109,16 @@ def main() -> None:
         config.routing.rerank_fusion_mode = args.rerank_fusion_mode
     if args.rerank_fusion_lambda is not None:
         config.routing.rerank_fusion_lambda = float(args.rerank_fusion_lambda)
+    if args.use_relation_description:
+        config.prototype.use_relation_description = True
+    if args.description_weight is not None:
+        config.prototype.description_weight = float(args.description_weight)
+    if args.analytic_projection_mode is not None:
+        config.prototype.analytic_projection_mode = args.analytic_projection_mode
+    if args.analytic_projection_dim is not None:
+        config.prototype.analytic_projection_dim = int(args.analytic_projection_dim)
+    if args.analytic_ridge_lambda is not None:
+        config.prototype.analytic_ridge_lambda = float(args.analytic_ridge_lambda)
     if args.cluster_size_eta is not None:
         config.routing.cluster_size_eta = float(args.cluster_size_eta)
     if args.hybrid_cluster_gamma is not None:

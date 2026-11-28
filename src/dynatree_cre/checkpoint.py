@@ -99,7 +99,15 @@ def load_dynatree_checkpoint(
     saved_cfg = payload["config"]
     cur_cfg = config.to_dict()
     defaults_compat = {
-        "prototype": {"retrieval_similarity_space": None},
+        "prototype": {
+            "retrieval_similarity_space": None,
+            "description_weight": 0.25,
+            "use_analytic_retrieval": False,
+            "analytic_projection_mode": "random_relu",
+            "analytic_projection_dim": 4096,
+            "analytic_projection_seed": 2021,
+            "analytic_ridge_lambda": 10.0,
+        },
         "routing": {
             "cluster_size_eta": 0.0,
             "hybrid_cluster_gamma": 0.0,

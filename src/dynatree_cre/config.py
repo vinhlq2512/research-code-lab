@@ -25,6 +25,12 @@ class PrototypeConfig:
     similarity_space: str = "t1_centered_cosine"  # t1_centered_cosine | incremental_centered_cosine | raw_cosine
     retrieval_similarity_space: str | None = None  # None -> defaults to similarity_space; or raw_cosine | t1_centered_cosine | incremental_centered_cosine
     use_relation_description: bool = False
+    description_weight: float = 0.25
+    use_analytic_retrieval: bool = False
+    analytic_projection_mode: str = "random_relu"  # identity | random_relu
+    analytic_projection_dim: int = 4096
+    analytic_projection_seed: int = 2021
+    analytic_ridge_lambda: float = 10.0
     max_seq_length: int = 128
 
 
@@ -164,6 +170,13 @@ class DynaTreeConfig:
                 f"Unsupported retrieval_similarity_space: {self.prototype.retrieval_similarity_space}"
             )
 
+        if self.prototype.analytic_projection_mode not in ("identity", "random_relu"):
+            raise ValueError(
+                f"Unsupported analytic_projection_mode: {self.prototype.analytic_projection_mode}"
+            )
+        if not (0.0 <= float(self.prototype.description_weight) < 1.0):
+            raise ValueError("prototype.description_weight must be in [0.0, 1.0).")
+
         if self.tree.distance_metric == "cosine" and self.tree.linkage == "ward":
             raise ValueError("Ward linkage is mathematically invalid with cosine distance.")
         if self.tree.max_depth != 2:
@@ -190,6 +203,8 @@ class DynaTreeConfig:
             "hierarchical_soft",
             "size_corrected_hierarchical",
             "hybrid_tree_routing",
+            "analytic_retrieval",
+            "hybrid_analytic_tree",
             "oracle_route",
         ):
             raise ValueError(f"Unsupported routing.strategy: {self.routing.strategy}")

@@ -1,5 +1,6 @@
 """DynaTree-CRE: Dynamic Semantic Prompt Trees for Rehearsal-Free Continual Relation Extraction."""
 
+from src.dynatree_cre.analytic import IncrementalAnalyticHead
 from src.dynatree_cre.benchmark import (
     TaskStreamBundle,
     build_synthetic_task_stream,
@@ -26,6 +27,7 @@ __all__ = [
     "RoutingResult",
     "TaskAgnosticRouter",
     "ExpandableCosineClassifier",
+    "IncrementalAnalyticHead",
     "DynaTreeCREModel",
     "DynaTreeContinualTrainer",
     "TaskStreamBundle",

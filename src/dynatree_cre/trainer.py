@@ -98,6 +98,34 @@ class DynaTreeContinualTrainer:
                 raise ValueError(f"Future/overlap violation: relation {r_id} already observed.")
 
     @torch.no_grad()
+    def _encode_relation_descriptions(self, task: ProtocolV1Task) -> dict[int, torch.Tensor]:
+        """Encode relation names inside entity-marker template via frozen BERT."""
+        desc_samples: list[ProtocolV1Sample] = []
+        for idx, (rel_id, rel_name) in enumerate(zip(task.relations, task.relation_names)):
+            clean_name = str(rel_name).replace("_", " ").replace(":", " ")
+            marked_text = f"[E1] subject entity [/E1] has relation {clean_name} with [E2] object entity [/E2]"
+            words = marked_text.split()
+            desc_samples.append(
+                ProtocolV1Sample(
+                    relation_id=int(rel_id),
+                    relation_name=str(rel_name),
+                    class_idx=int(task.class_indices[idx]) if idx < len(task.class_indices) else idx,
+                    task_id=int(task.task_id),
+                    words=words,
+                    marked_text=marked_text,
+                    head_text="subject entity",
+                    tail_text="object entity",
+                    head_indices=[1, 2],
+                    tail_indices=[len(words) - 3, len(words) - 2],
+                )
+            )
+        batch, rel_ids = self._collate_with_rel_ids(desc_samples)
+        q_desc = self.model.encode_stationary_queries(
+            batch["input_ids"], batch["attention_mask"], batch["e1_indices"], batch["e2_indices"]
+        )
+        return {int(r): q_desc[i : i + 1].cpu() for i, r in enumerate(rel_ids.tolist())}
+
+    @torch.no_grad()
     def _phase_b_build_prototypes(self, task: ProtocolV1Task) -> dict[int, Any]:
         samples = list(task.train_samples)
         by_rel_q: dict[int, list[torch.Tensor]] = {r: [] for r in task.relations}
@@ -114,10 +142,26 @@ class DynaTreeContinualTrainer:
                 by_rel_q[int(r_val)].append(q[row_idx : row_idx + 1].cpu())
 
         rel_tensors = {r: torch.cat(chunks, dim=0) for r, chunks in by_rel_q.items()}
+        desc_tensors = (
+            self._encode_relation_descriptions(task)
+            if self.config.prototype.use_relation_description
+            else None
+        )
+        desc_w = (
+            float(self.config.prototype.description_weight)
+            if self.config.prototype.use_relation_description
+            else 0.0
+        )
+        if self.model.analytic_head is not None:
+            self.model.analytic_head.update_task(
+                rel_tensors, rel_to_desc_vec=desc_tensors, desc_weight=desc_w
+            )
         return self.model.prototype_bank.register_task_prototypes(
             relation_queries=rel_tensors,
             task_id=task.task_id,
             relation_names=rel_names,
+            relation_descriptions=desc_tensors,
+            description_weight=desc_w,
         )
 
     @torch.no_grad()
@@ -192,16 +236,13 @@ class DynaTreeContinualTrainer:
         with torch.no_grad():
             raw_q = self.model.encode_stationary_queries(input_ids, attention_mask, e1_idx, e2_idx)
             ret_q = self.model.prototype_bank.transform_queries_for_retrieval(raw_q)
-            ord_rels = self.model.tree.seen_relation_ids()
-            ord_clus = self.model.tree.cluster_ids()
-            leaf_ret, clus_ret = self.model.prototype_bank.get_retrieval_prototypes(
-                self.model.tree, ord_rels, ord_clus
-            )
+            ord_rels, _, leaf_ret, clus_ret, analytic_scores = self.model.get_retrieval_context(raw_q)
             raw_scores, _, _, _, _, _ = self.model.router.compute_retrieval_scores(
                 queries=ret_q,
                 tree=self.model.tree,
                 leaf_protos_override=leaf_ret,
                 cluster_protos_override=clus_ret,
+                analytic_scores_override=analytic_scores,
             )
             k_ret = min(int(self.config.routing.top_k), len(ord_rels))
             _, ret_topk_pos = torch.topk(raw_scores, k=k_ret, dim=-1)
